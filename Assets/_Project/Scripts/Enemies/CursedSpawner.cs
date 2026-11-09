@@ -101,19 +101,30 @@ public class CursedSpawner : MonoBehaviour
                 {
                     string chosenTag = validTags[Random.Range(0, validTags.Count)];
                     GameObject obj = ObjectPooler.Instance.SpawnFromPool(chosenTag, spawnPos, Quaternion.identity);
-                    if (obj != null) spawned = true;
+                    if (obj != null)
+                    {
+                        MarkAsQuestEnemy(obj);
+                        spawned = true;
+                    }
                 }
             }
 
             // 2. Si el pool no tenía los tags, usar prefab de respaldo asignado
             if (!spawned && fallbackEnemyPrefab != null)
             {
-                Instantiate(fallbackEnemyPrefab, spawnPos, Quaternion.identity);
+                MarkAsQuestEnemy(Instantiate(fallbackEnemyPrefab, spawnPos, Quaternion.identity));
                 spawned = true;
             }
 
             yield return new WaitForSeconds(spawnInterval);
         }
+    }
+
+    // M3-2 / M3-6: las misiones de limpiar el área cuentan los QuestEnemy. Si el prefab no la trae, se agrega
+    // acá (al agregarla con el objeto activo se dispara su OnEnable y la misión la reclama en el momento).
+    private static void MarkAsQuestEnemy(GameObject enemy)
+    {
+        if (enemy != null && enemy.GetComponent<QuestEnemy>() == null) enemy.AddComponent<QuestEnemy>();
     }
 
     void OnDrawGizmosSelected()
