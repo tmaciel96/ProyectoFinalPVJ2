@@ -7,8 +7,9 @@
 // Descripción del script:
 // Controlador del jugador con avatar monolítico (tótem de calabaza Jack-o'-Lantern) basado 100% en el
 // New Input System. Administra movimiento relativo a la cámara, gravedad, rotación horizontal XZ con
-// cálculo de apuntado 3D en desniveles/colinas, sistema de munición (20 balas), recarga con [R]
-// y disparo continuo rúnico conectado con el ObjectPooler.
+// cálculo de apuntado 3D en desniveles/colinas y lanzamiento de piedras conectado con el ObjectPooler.
+// M1-4/M1-5 (El Turno del Sepulturero): ya no hay munición con recarga; cada lanzamiento gasta una
+// piedra del StoneInventory (máximo 10), que se reponen en los montículos (StonePile).
 // =================================================================================================
 
 using System;
@@ -25,23 +26,22 @@ public class PlayerController : MonoBehaviour
     private float verticalVelocity;
 
     [Header("Lanzar piedra (Clic Derecho o K)")]
-    public float fireRate = 0.2f;
+    [Tooltip("Segundos mínimos entre lanzamientos")]
+    public float fireRate = 0.35f;
     private float nextFire;
     public Transform firePoint;
+
+    [Tooltip("Prefab del proyectil de piedra (Projectile_Stone). Se registra solo en el ObjectPooler con stonePoolTag.")]
+    public GameObject stoneProjectilePrefab;
+    public string stonePoolTag = "Stone";
+    public int stonePoolSize = 12;
+
+    [Tooltip("Pool de respaldo si no hay prefab de piedra (el proyectil del TP1)")]
     public string bulletPoolTag = "PlayerBullet";
-    
     [Tooltip("Prefab de respaldo si el ObjectPooler no está en la escena")]
     public GameObject bulletFallbackPrefab;
 
-    [Header("Sistema de Munición y Recarga")]
-    public int maxAmmo = 20;
-    public int currentAmmo = 20;
-    public float reloadDuration = 1.2f;
-    public bool isReloading = false;
-    private Coroutine reloadCoroutine;
-
-    // Evento para informar a la UI (munición actual, máxima, si está recargando)
-    public static event Action<int, int, bool> OnAmmoChanged;
+    private StoneInventory stones;
 
     [Header("Referencias")]
     public Camera cam;
@@ -98,6 +98,18 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<PlayerInteractor>();
         }
 
+        // Y con el inventario de piedras (M1-4)
+        stones = GetComponent<StoneInventory>();
+        if (stones == null)
+        {
+            Debug.LogWarning("[PlayerController] Falta StoneInventory en el Player: se agrega en runtime. Sumalo al prefab.");
+            stones = gameObject.AddComponent<StoneInventory>();
+        }
+
+        // El pool de piedras se registra en runtime: así no hace falta editar la escena
+        if (stoneProjectilePrefab != null && ObjectPooler.Instance != null)
+            ObjectPooler.Instance.RegisterPool(stonePoolTag, stoneProjectilePrefab, stonePoolSize);
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -106,9 +118,6 @@ public class PlayerController : MonoBehaviour
             Transform found = transform.Find("FirePoint");
             if (found != null) firePoint = found;
         }
-
-        currentAmmo = maxAmmo;
-        OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, false);
     }
 
     void OnEnable()
@@ -134,7 +143,6 @@ public class PlayerController : MonoBehaviour
         HandleAiming();
         HandleShooting();
         HandleRotation();
-        HandleReloadInput();
     }
 
     private void HandleMovement()
@@ -285,18 +293,14 @@ public class PlayerController : MonoBehaviour
     private void HandleShooting()
     {
         // Controles del GDD: clic izquierdo/J = pala (PlayerShovel), clic derecho/K = piedra
-        bool mouseShoot = Mouse.current != null && Mouse.current.rightButton.isPressed;
-        bool keyShoot = Keyboard.current != null && Keyboard.current.kKey.isPressed;
+        // Un lanzamiento por pulsación (no ráfaga): las piedras son pocas
+        bool mouseShoot = Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
+        bool keyShoot = Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame;
 
         if ((mouseShoot || keyShoot) && Time.time >= nextFire)
         {
-            if (isReloading) return;
-
-            if (currentAmmo <= 0)
-            {
-                StartReload();
-                return;
-            }
+            // Sin piedras no se lanza (StoneInventory avisa OnOutOfStones)
+            if (stones != null && !stones.TryConsume()) return;
 
             nextFire = Time.time + fireRate;
             // Con el mouse se apunta al puntero; con K se tira hacia adelante
@@ -306,50 +310,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandleReloadInput()
-    {
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
-        {
-            if (!isReloading && currentAmmo < maxAmmo)
-            {
-                StartReload();
-            }
-        }
-    }
-
-    public void StartReload()
-    {
-        if (isReloading) return;
-        if (reloadCoroutine != null) StopCoroutine(reloadCoroutine);
-        reloadCoroutine = StartCoroutine(ReloadRoutine());
-    }
-
-    private IEnumerator ReloadRoutine()
-    {
-        isReloading = true;
-        OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, true);
-
-        yield return new WaitForSeconds(reloadDuration);
-
-        currentAmmo = maxAmmo;
-        isReloading = false;
-        reloadCoroutine = null;
-        OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, false);
-    }
-
+    /// <summary>Al reaparecer (PlayerHealth). Las piedras las repone StoneInventory.</summary>
     public void ResetShootingState()
     {
-        if (reloadCoroutine != null)
-        {
-            StopCoroutine(reloadCoroutine);
-            reloadCoroutine = null;
-        }
-
-        isReloading = false;
-        currentAmmo = maxAmmo;
         nextFire = 0f;
+        aimHoldUntil = 0f;
         currentAimPoint3D = transform.position + transform.forward * 10f;
-        OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, false);
     }
 
     private void Shoot()
@@ -369,7 +335,9 @@ public class PlayerController : MonoBehaviour
 
         if (ObjectPooler.Instance != null)
         {
-            GameObject pooledObj = ObjectPooler.Instance.SpawnFromPool(bulletPoolTag, spawnPos, spawnRot);
+            // Primero el pool de piedras; si no está registrado, el proyectil del TP1
+            string poolTag = ObjectPooler.Instance.HasPool(stonePoolTag) ? stonePoolTag : bulletPoolTag;
+            GameObject pooledObj = ObjectPooler.Instance.SpawnFromPool(poolTag, spawnPos, spawnRot);
             if (pooledObj != null)
             {
                 Rigidbody rb = pooledObj.GetComponent<Rigidbody>();
@@ -383,9 +351,10 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (!spawned && bulletFallbackPrefab != null)
+        GameObject fallbackPrefab = stoneProjectilePrefab != null ? stoneProjectilePrefab : bulletFallbackPrefab;
+        if (!spawned && fallbackPrefab != null)
         {
-            GameObject instObj = Instantiate(bulletFallbackPrefab, spawnPos, spawnRot);
+            GameObject instObj = Instantiate(fallbackPrefab, spawnPos, spawnRot);
             Rigidbody rb = instObj.GetComponent<Rigidbody>();
             if (rb == null)
             {
@@ -399,26 +368,18 @@ public class PlayerController : MonoBehaviour
         if (!spawned)
         {
             GameObject defaultBullet = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            defaultBullet.name = "Auto_Bullet_PumpkinLight";
+            defaultBullet.name = "Auto_Stone";
             defaultBullet.transform.position = spawnPos;
             defaultBullet.transform.rotation = spawnRot;
-            defaultBullet.transform.localScale = Vector3.one * 0.5f;
+            defaultBullet.transform.localScale = Vector3.one * 0.3f;
 
             Renderer rend = defaultBullet.GetComponent<Renderer>();
             if (rend != null)
             {
                 Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                mat.color = new Color(1f, 0.55f, 0f);
-                mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", new Color(1f, 0.4f, 0f) * 2f);
+                mat.color = new Color(0.45f, 0.43f, 0.4f);
                 rend.material = mat;
             }
-
-            Light ptLight = defaultBullet.AddComponent<Light>();
-            ptLight.type = LightType.Point;
-            ptLight.color = new Color(1f, 0.6f, 0f);
-            ptLight.range = 3f;
-            ptLight.intensity = 2f;
 
             Collider col = defaultBullet.GetComponent<Collider>();
             if (col != null) col.isTrigger = true;
@@ -428,21 +389,13 @@ public class PlayerController : MonoBehaviour
             rb.useGravity = false;
 
             PooledProjectile proj = defaultBullet.AddComponent<PooledProjectile>();
-            proj.speed = 22f;
+            proj.speed = 18f;
             proj.damage = 25;
-            proj.lifeTime = 2.5f;
+            proj.lifeTime = 1.5f;
             proj.isPlayerProjectile = true;
         }
 
-        // El disparo actual pasa a ser "lanzar piedra" (M1-5): misma animación
+        // M1-5: animación de lanzar piedra (la piedra ya se descontó en HandleShooting)
         if (animator != null) animator.SetTrigger(AnimThrow);
-
-        currentAmmo--;
-        OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, false);
-
-        if (currentAmmo <= 0)
-        {
-            StartReload();
-        }
     }
 }
