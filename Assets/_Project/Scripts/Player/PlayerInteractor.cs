@@ -2,9 +2,10 @@
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // PlayerInteractor (M1-7): busca el IInteractable más cercano dentro de su radio, expone su texto para
-// el HUD (Current / OnFocusChanged) y lo activa al presionar [E].
-// Solo la E: el Espacio queda para avanzar los diálogos.
-// Mientras hay un diálogo abierto no interactúa, así la misma E que cierra un diálogo no abre otro.
+// el HUD (Current / OnFocusChanged) y lo activa con la acción Interact del PlayerInputReader
+// (E, Espacio o A del gamepad).
+// Mientras hay un diálogo abierto no interactúa, así la misma tecla que cierra un diálogo no abre otro
+// (DialogueSystem.BlocksGameplay sigue en true el frame en que se cierra).
 // =================================================================================================
 
 using System;
@@ -39,10 +40,12 @@ public class PlayerInteractor : MonoBehaviour
     public static event Action<IInteractable> OnFocusChanged;
 
     private PlayerHealth health;
+    private PlayerInputReader input;
 
     void Awake()
     {
         health = GetComponent<PlayerHealth>();
+        input = PlayerController.EnsureInput(gameObject);
     }
 
     void OnDisable()
@@ -55,7 +58,7 @@ public class PlayerInteractor : MonoBehaviour
         bool blocked = (health != null && health.IsDead) || DialogueSystem.BlocksGameplay;
         SetCurrent(blocked ? null : FindClosest());
 
-        if (Current != null && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        if (Current != null && input != null && input.InteractPressed)
             Current.Interact(gameObject);
     }
 

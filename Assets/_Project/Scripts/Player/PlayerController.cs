@@ -10,6 +10,7 @@
 // cálculo de apuntado 3D en desniveles/colinas y lanzamiento de piedras conectado con el ObjectPooler.
 // M1-4/M1-5 (El Turno del Sepulturero): ya no hay munición con recarga; cada lanzamiento gasta una
 // piedra del StoneInventory (máximo 10), que se reponen en los montículos (StonePile).
+// M1-1: los controles se leen del PlayerInputReader (InputSystem_Actions), no del teclado directo.
 // =================================================================================================
 
 using System;
@@ -42,6 +43,7 @@ public class PlayerController : MonoBehaviour
     public GameObject bulletFallbackPrefab;
 
     private StoneInventory stones;
+    private PlayerInputReader input;
 
     [Header("Referencias")]
     public Camera cam;
@@ -74,6 +76,23 @@ public class PlayerController : MonoBehaviour
     private static readonly int AnimMoveZ = Animator.StringToHash("MoveZ");
     private static readonly int AnimAttack = Animator.StringToHash("Attack");
     private static readonly int AnimThrow = Animator.StringToHash("Throw");
+
+    void Awake()
+    {
+        input = EnsureInput(gameObject);
+    }
+
+    /// <summary>El PlayerInputReader del objeto; si el prefab no lo tiene, se agrega en runtime.</summary>
+    internal static PlayerInputReader EnsureInput(GameObject owner)
+    {
+        PlayerInputReader reader = owner.GetComponent<PlayerInputReader>();
+        if (reader == null)
+        {
+            Debug.LogWarning("[PlayerController] Falta PlayerInputReader en el Player: se agrega en runtime. Sumalo al prefab.");
+            reader = owner.AddComponent<PlayerInputReader>();
+        }
+        return reader;
+    }
 
     void Start()
     {
@@ -147,16 +166,10 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        float h = 0f;
-        float v = 0f;
-
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) h -= 1f;
-            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) h += 1f;
-            if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) v -= 1f;
-            if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) v += 1f;
-        }
+        // Teclado: -1, 0 o 1 en cada eje; stick: valores intermedios (camina más lento si se inclina poco)
+        Vector2 moveInput = input != null ? input.Move : Vector2.zero;
+        float h = moveInput.x;
+        float v = moveInput.y;
 
         Vector3 moveDirection = Vector3.zero;
         if (cam != null)
@@ -168,11 +181,11 @@ public class PlayerController : MonoBehaviour
             camForward.Normalize();
             camRight.Normalize();
 
-            moveDirection = (camForward * v + camRight * h).normalized;
+            moveDirection = Vector3.ClampMagnitude(camForward * v + camRight * h, 1f);
         }
         else
         {
-            moveDirection = new Vector3(h, 0f, v).normalized;
+            moveDirection = Vector3.ClampMagnitude(new Vector3(h, 0f, v), 1f);
         }
 
         if (controller.isGrounded && verticalVelocity < 0f)
@@ -212,9 +225,10 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAiming()
     {
-        if (Mouse.current == null || cam == null) return;
+        Vector2? pointer = input != null ? input.PointerPosition : null;
+        if (pointer == null || cam == null) return;
 
-        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        Vector2 mouseScreenPos = pointer.Value;
         Ray ray = cam.ScreenPointToRay(mouseScreenPos);
 
         // Raycast en 3D para detectar exactamente la superficie donde el jugador hace clic (colinas, enemigos elevados, rampas)
@@ -284,7 +298,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void FaceAimForAction()
     {
-        if (cam == null || Mouse.current == null) return;
+        if (cam == null || input == null || input.PointerPosition == null) return;
         HandleAiming(); // punto actualizado aunque se llame antes que el Update de este script
         FaceAimPointInstant();
         aimHoldUntil = Time.time + aimHoldTime;
@@ -294,16 +308,16 @@ public class PlayerController : MonoBehaviour
     {
         // Controles del GDD: clic izquierdo/J = pala (PlayerShovel), clic derecho/K = piedra
         // Un lanzamiento por pulsación (no ráfaga): las piedras son pocas
-        bool mouseShoot = Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
-        bool keyShoot = Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame;
+        if (input == null || !input.ThrowPressed) return;
+        bool mouseShoot = input.ThrowFromPointer;
 
-        if ((mouseShoot || keyShoot) && Time.time >= nextFire)
+        if (Time.time >= nextFire)
         {
             // Sin piedras no se lanza (StoneInventory avisa OnOutOfStones)
             if (stones != null && !stones.TryConsume()) return;
 
             nextFire = Time.time + fireRate;
-            // Con el mouse se apunta al puntero; con K se tira hacia adelante
+            // Con el mouse se apunta al puntero; con K o el gamepad se tira hacia adelante
             if (mouseShoot) FaceAimForAction();
             else currentAimPoint3D = transform.position + transform.forward * 10f + Vector3.up * 1f;
             Shoot();

@@ -167,10 +167,21 @@ public class DialogueSystem : MonoBehaviour
         // La tecla que abrió el diálogo (por ejemplo la E sobre un NPC) no lo avanza en el mismo frame
         if (!IsOpen || Time.frameCount == openedFrame) return;
 
-        var kb = Keyboard.current;
-        var mouse = Mouse.current;
-        bool advance = (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.eKey.wasPressedThisFrame))
-                       || (mouse != null && mouse.leftButton.wasPressedThisFrame && !PointerOverButton());
+        // Interact (E, Espacio, A) o Attack (clic, J, X) del PlayerInputReader. Sin lector, el teclado directo.
+        bool advance;
+        PlayerInputReader input = PlayerInputReader.Instance;
+        if (input != null)
+        {
+            advance = input.InteractPressed
+                      || (input.AttackPressed && !(input.AttackFromPointer && PointerOverButton()));
+        }
+        else
+        {
+            var kb = Keyboard.current;
+            var mouse = Mouse.current;
+            advance = (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.eKey.wasPressedThisFrame))
+                      || (mouse != null && mouse.leftButton.wasPressedThisFrame && !PointerOverButton());
+        }
         if (advance) Next();
     }
 
