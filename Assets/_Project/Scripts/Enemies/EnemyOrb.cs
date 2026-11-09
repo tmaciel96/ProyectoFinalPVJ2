@@ -65,7 +65,6 @@ public class EnemyOrb : MonoBehaviour, IDamageable
     [Header("Recompensas / Pickups")]
     [Range(0f, 1f)] public float dropChance = 0.5f;
     public string healthPickupTag = "PickupHealth";
-    public string timePickupTag = "PickupTime";
 
     [Header("Efectos Visuales")]
     public GameObject deathVFX;
@@ -524,10 +523,10 @@ public class EnemyOrb : MonoBehaviour, IDamageable
 
         if (UnityEngine.Random.value <= dropChance && ObjectPooler.Instance != null)
         {
-            string chosenTag = UnityEngine.Random.value > 0.5f ? healthPickupTag : timePickupTag;
-            if (ObjectPooler.Instance.poolDictionary.ContainsKey(chosenTag))
+            // M2-7: sin cronómetro ya no se sueltan pociones de tiempo, solo de vida
+            if (ObjectPooler.Instance.poolDictionary.ContainsKey(healthPickupTag))
             {
-                ObjectPooler.Instance.SpawnFromPool(chosenTag, transform.position, Quaternion.identity);
+                ObjectPooler.Instance.SpawnFromPool(healthPickupTag, transform.position, Quaternion.identity);
             }
         }
 

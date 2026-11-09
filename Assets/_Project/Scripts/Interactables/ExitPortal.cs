@@ -52,13 +52,10 @@ public class ExitPortal : MonoBehaviour
 
     void Update()
     {
-        // Si el GameManager ya completó los 3 altares, asegurar que el portal esté desbloqueado
-        if (!isUnlocked && GameManager.Instance != null)
+        // M2-7: se abre con las 5 misiones completadas (el GameManager también lo abre al enterarse)
+        if (!isUnlocked && QuestManager.AllCompleted)
         {
-            if (GameManager.Instance.runesActivated >= GameManager.Instance.totalRunes)
-            {
-                UnlockPortal();
-            }
+            UnlockPortal();
         }
 
         // Respaldo por proximidad: si el jugador se mete al portal abierto, se activa la victoria garantizada

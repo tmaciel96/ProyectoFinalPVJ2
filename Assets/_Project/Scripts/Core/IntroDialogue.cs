@@ -3,7 +3,7 @@
 // Autora: Tamara Maciel
 //
 // Diálogo introductorio al empezar el nivel. Ahora es un cliente de DialogueSystem (M2-2):
-// pausa el cronómetro, reproduce las líneas y al terminar lo vuelve a arrancar.
+// pone al GameManager en Intro, reproduce las líneas y al terminar pasa a Jugando (M2-7).
 // Si la escena todavía no tiene un DialogueSystem propio, lo agrega acá y le pasa las referencias
 // del Panel_Dialogue que ya estaban cargadas en este componente (no hace falta tocar la escena).
 // Si introData tiene un DialogueData asignado, usa ese en vez de las líneas de abajo (M2-9).
@@ -55,8 +55,7 @@ public class IntroDialogue : MonoBehaviour
             return;
         }
 
-        // Pausar el cronómetro mientras se lee la historia
-        if (GameManager.Instance != null) GameManager.Instance.timerIsActive = false;
+        if (GameManager.Instance != null) GameManager.Instance.BeginIntro();
 
         if (introData != null) DialogueSystem.Instance.Play(introData, OnIntroFinished);
         else DialogueSystem.Instance.Play(dialogueLines, OnIntroFinished);
@@ -64,7 +63,7 @@ public class IntroDialogue : MonoBehaviour
 
     private void OnIntroFinished()
     {
-        if (GameManager.Instance != null) GameManager.Instance.timerIsActive = true;
+        if (GameManager.Instance != null) GameManager.Instance.StartPlaying();
         Debug.Log("<color=orange>Diálogo inicial terminado.</color>");
     }
 }

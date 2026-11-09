@@ -5,7 +5,7 @@
 // cuando su misión pasa a Completada en el QuestManager; no hace falta acercarse.
 // Hay uno por misión: en el Inspector se elige cuál.
 // "Activación manual" deja encenderlo con [E] como en el TP1 (solo para pruebas; apagado por defecto).
-// Hasta M2-7 sigue avisando a GameManager.ActivateRune para que el portal se abra con las runas.
+// El contador de runas del HUD y el portal los maneja el GameManager con el QuestManager (M2-7).
 // =================================================================================================
 
 using UnityEngine;
@@ -85,12 +85,6 @@ public class RuneAltar : MonoBehaviour, IInteractable
 
         if (activationVFX != null) activationVFX.Play();
         if (playEffects && activationAudio != null) activationAudio.Play();
-
-        // TODO M2-7: el GameManager va a contar las runas con QuestManager.CompletedCount
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.ActivateRune();
-        }
 
         onActivated?.Invoke();
         Debug.Log($"[RuneAltar] Runa de {quest} encendida.");
