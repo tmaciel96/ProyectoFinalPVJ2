@@ -4,7 +4,8 @@
 // GameManager (M2-7): gestor principal del nivel (Singleton).
 //  - Estados de la partida: Intro (habla el espíritu), Jugando y Victoria. Sin cronómetro ni derrota:
 //    morir solo te devuelve al checkpoint del sector (M1-10).
-//  - Runas 0/5: las cuenta el QuestManager (una por misión completada). Con las 5 abre el portal.
+//  - Runas 0/5: las cuenta el QuestManager (una por misión completada). Con las 5 se abren el portón
+//    principal (QuestGate) y el portal; al cruzarlo, OnPlayerEscaped muestra la pantalla de victoria.
 //  - HUD de vida, piedras, aviso de interacción y viñeta de daño; botones de la pantalla de victoria.
 // =================================================================================================
 
@@ -46,6 +47,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Pantalla de Victoria")]
     public GameObject victoryPanel;
+    [Tooltip("Texto del panel de victoria (opcional): si está asignado se reemplaza por victoryMessage")]
+    public TextMeshProUGUI victoryText;
+    [TextArea] public string victoryMessage = "¡Las cinco runas brillan otra vez!\nLas almas del cementerio descansan: terminó el turno del sepulturero.";
 
     [Header("Restos del TP1 (se ocultan al empezar; se pueden borrar de la escena)")]
     [Tooltip("Texto del viejo cronómetro de las 3:33")]
@@ -187,9 +191,11 @@ public class GameManager : MonoBehaviour
 
     private void HandleAllQuestsCompleted()
     {
-        // TODO M2-8: portón principal y pantalla de fin
+        // El portón (QuestGate) y el portal escuchan al QuestManager por su cuenta; esto es por si el
+        // portal estaba desactivado cuando se completó la quinta misión
         if (escapePortal == null) escapePortal = FindFirstObjectByType<ExitPortal>();
         if (escapePortal != null) escapePortal.UnlockPortal();
+        Debug.Log("<color=yellow>Las 5 runas están encendidas: el portón principal se abrió.</color>");
     }
 
     private void UpdateRunesDisplay()
@@ -295,6 +301,7 @@ public class GameManager : MonoBehaviour
 
         if (victoryPanel != null)
         {
+            if (victoryText != null && !string.IsNullOrEmpty(victoryMessage)) victoryText.text = victoryMessage;
             victoryPanel.SetActive(true);
             victoryPanel.transform.SetAsLastSibling(); // Poner al frente de cualquier otra imagen
         }

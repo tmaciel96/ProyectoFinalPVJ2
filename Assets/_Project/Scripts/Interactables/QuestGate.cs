@@ -5,6 +5,7 @@
 // Completada desactiva los colliders que bloquean, cambia lo visual (cerrada / abierta), suena y,
 // si tiene una hoja asignada, la desliza o gira hasta quedar abierta.
 // Se elige la misión en el Inspector: la reja del sector 1 usa la misión de la Bruja, etc.
+// M2-8: con "Requiere todas las misiones" es el portón principal, que se abre con las 5 runas.
 // M2-6: si tiene asignado el Checkpoint del sector que libera, al abrirse lo vuelve el punto de
 // reaparición (así no hace falta volver a pisarlo para no perder el avance).
 // =================================================================================================
@@ -18,6 +19,8 @@ public class QuestGate : MonoBehaviour
     [Header("Misión")]
     [Tooltip("La misión que abre esta reja")]
     public QuestId quest = QuestId.Bruja;
+    [Tooltip("Portón principal: se abre con las 5 misiones completadas (ignora \"quest\")")]
+    public bool requireAllQuests = false;
     public bool isOpen = false;
 
     [Header("Bloqueo")]
@@ -71,7 +74,7 @@ public class QuestGate : MonoBehaviour
     void Start()
     {
         // Misión ya completada (o reja marcada abierta en el Inspector): queda abierta sin animación
-        if (isOpen || QuestManager.IsCompleted(quest))
+        if (isOpen || IsUnlocked)
         {
             isOpen = false;
             Open(animate: false);
@@ -84,8 +87,11 @@ public class QuestGate : MonoBehaviour
 
     private void HandleQuestChanged(QuestId id, QuestState state)
     {
-        if (id == quest && state == QuestState.Completada) Open();
+        if (state != QuestState.Completada) return;
+        if (requireAllQuests ? QuestManager.AllCompleted : id == quest) Open();
     }
+
+    private bool IsUnlocked => requireAllQuests ? QuestManager.AllCompleted : QuestManager.IsCompleted(quest);
 
     public void Open() => Open(animate: true);
 
@@ -108,7 +114,7 @@ public class QuestGate : MonoBehaviour
             if (openAudio != null) openAudio.Play();
             onOpened?.Invoke();
         }
-        Debug.Log($"[QuestGate] Reja de {quest} abierta.");
+        Debug.Log(requireAllQuests ? "[QuestGate] Portón principal abierto." : $"[QuestGate] Reja de {quest} abierta.");
     }
 
     private void ApplyState()

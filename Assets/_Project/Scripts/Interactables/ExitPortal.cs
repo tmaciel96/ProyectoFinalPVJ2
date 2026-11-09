@@ -1,13 +1,10 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Portal de escape que define la condición de victoria del nivel. Permanece sellado hasta que
-// los 3 altares rúnicos han sido purificados. Al desbloquearse, activa su portal místico y
-// detecta la entrada del jugador (mediante trigger y proximidad de respaldo) para notificar la victoria.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+//
+// ExitPortal (M2-8): la salida del cementerio, detrás del portón principal. Queda sellado hasta que
+// las 5 misiones están completadas (las 5 runas encendidas); entonces se abre y, cuando el sepulturero
+// lo cruza (trigger o, de respaldo, por distancia), el GameManager muestra la pantalla de victoria.
+// El portón que bloquea el paso es un QuestGate con "Requiere todas las misiones".
 // =================================================================================================
 
 using UnityEngine;
@@ -42,8 +39,12 @@ public class ExitPortal : MonoBehaviour
         rb.useGravity = false;
     }
 
+    void OnEnable()  { QuestManager.OnAllQuestsCompleted += UnlockPortal; }
+    void OnDisable() { QuestManager.OnAllQuestsCompleted -= UnlockPortal; }
+
     void Start()
     {
+        if (QuestManager.AllCompleted) isUnlocked = true;
         UpdatePortalState();
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -52,12 +53,6 @@ public class ExitPortal : MonoBehaviour
 
     void Update()
     {
-        // M2-7: se abre con las 5 misiones completadas (el GameManager también lo abre al enterarse)
-        if (!isUnlocked && QuestManager.AllCompleted)
-        {
-            UnlockPortal();
-        }
-
         // Respaldo por proximidad: si el jugador se mete al portal abierto, se activa la victoria garantizada
         if (isUnlocked)
         {
