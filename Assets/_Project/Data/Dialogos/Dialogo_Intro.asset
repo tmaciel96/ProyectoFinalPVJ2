@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
+  m_Name: Dialogo_Intro
+  m_EditorClassIdentifier: 
+  defaultSpeaker: "Esp\u00EDritu del Port\u00F3n"
+  lines:
+  - speaker: "Sepulturero"
+    message: "Listo, la \u00FAltima tumba barrida. Ahora a casa, que me espera un mate bien caliente..."
+  - speaker: "Sepulturero"
+    message: "\u00BFEh? \u00BFQui\u00E9n cerr\u00F3 el port\u00F3n? \u00A1Y esta niebla que brilla...!"
+  - speaker: "Esp\u00EDritu del Port\u00F3n"
+    message: "Tranquilo, sepulturero. Esta noche de luna llena el cementerio se sell\u00F3 con una magia antigua."
+  - speaker: "Esp\u00EDritu del Port\u00F3n"
+    message: "Mir\u00E1 el port\u00F3n: tiene cinco runas apagadas. Cada una despierta cuando ayud\u00E1s a un alma que no puede descansar."
+  - speaker: "Esp\u00EDritu del Port\u00F3n"
+    message: "La Bruja, el Guardi\u00E1n Esqueleto, el Vampiro, el Ni\u00F1o Fantasma y el Gato Negro te esperan, cada uno en su sector."
+  - speaker: "Esp\u00EDritu del Port\u00F3n"
+    message: "Con cada favor se enciende una runa y se abre la reja que lleva al sector siguiente. Con las cinco, el port\u00F3n te deja salir."
+  - speaker: "Sepulturero"
+    message: "Bueno... un turno extra no mata a nadie. Bah, ac\u00E1 adentro, digamos."
+  - speaker: "Esp\u00EDritu del Port\u00F3n"
+    message: "Habl\u00E1 con [E] o Espacio. Tu pala (clic izquierdo o J) y tus piedras (clic derecho o K) te van a cuidar de lo que ronda en la niebla. Suerte."

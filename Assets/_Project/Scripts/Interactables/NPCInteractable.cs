@@ -177,7 +177,7 @@ public class NPCInteractable : MonoBehaviour, IInteractable
         if (dir.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
     }
 
-    // Textos de respaldo hasta que estén los DialogueData de M2-9
+    // Textos de respaldo si falta asignar un diálogo (los de M2-9 están en Data/Dialogos/Dialogo_<NPC>_<estado>)
     private string DefaultLocked => "Ahora no, sepulturero. Primero ayudá a los que esperan antes que yo.";
     private string DefaultOffer => "Necesito tu ayuda, sepulturero. ¿Me harías un favor?";
     private string DefaultReminder => "¿Todavía nada? Te sigo esperando.";

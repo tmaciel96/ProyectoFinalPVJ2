@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
+  m_Name: Dialogo_Gato_Pedido
+  m_EditorClassIdentifier: 
+  defaultSpeaker: "Gato Negro"
+  lines:
+  - speaker: "Gato Negro"
+    message: "Miau... As\u00ED que llegaste hasta ac\u00E1. Yo cuido los recuerdos de este cementerio."
+  - speaker: "Gato Negro"
+    message: "La niebla desparram\u00F3 las ofrendas entre las l\u00E1pidas: recuerdos perdidos de las almas que descansan ac\u00E1."
+  - speaker: "Gato Negro"
+    message: "Juntalas y tra\u00E9melas. Cuando est\u00E9n todas, se enciende la \u00FAltima runa."
