@@ -2,7 +2,7 @@
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // Menú Sepulturero/Crear prefabs de piedras (M1-5, M1-6):
-//  - Prefabs/Player/Projectile_Stone.prefab: piedra chica de Poly Halloween con PooledProjectile.
+//  - Prefabs/Player/Projectile_Stone.prefab: piedra chica de Poly Halloween con Projectile.
 //  - Prefabs/Pickups/Item_PilaPiedras.prefab: montículo (Rock_A + piedras sueltas) con StonePile.
 //  - Asigna Projectile_Stone en el campo stoneProjectilePrefab del Player.prefab (y le suma StoneInventory).
 // Si los prefabs ya existen los sobrescribe (conserva el GUID, así no se rompen las referencias).
@@ -64,7 +64,7 @@ public static class StonePrefabBuilder
             rb.isKinematic = true;
             rb.useGravity = false;
 
-            PooledProjectile proj = root.AddComponent<PooledProjectile>();
+            Projectile proj = root.AddComponent<Projectile>();
             proj.speed = 18f;
             proj.damage = 25;
             proj.lifeTime = 1.5f;

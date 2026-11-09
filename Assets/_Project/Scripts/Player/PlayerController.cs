@@ -1,22 +1,19 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Controlador del jugador con avatar monolítico (tótem de calabaza Jack-o'-Lantern) basado 100% en el
-// New Input System. Administra movimiento relativo a la cámara, gravedad, rotación horizontal XZ con
-// cálculo de apuntado 3D en desniveles/colinas y lanzamiento de piedras conectado con el ObjectPooler.
-// M1-4/M1-5 (El Turno del Sepulturero): ya no hay munición con recarga; cada lanzamiento gasta una
-// piedra del StoneInventory (máximo 10), que se reponen en los montículos (StonePile).
-// M1-1: los controles se leen del PlayerInputReader (InputSystem_Actions), no del teclado directo.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+// Basado en el PlayerController del TP1 (The Pumpkin Ritual, Tamara Maciel).
+//
+// Controlador del sepulturero, con el CharacterController:
+//  - Movimiento relativo a la cámara y gravedad. Mira hacia donde camina; al pegar o tirar con el mouse
+//    gira hacia el puntero (apuntado 3D sobre colinas y desniveles).
+//  - M1-5: lanza piedras desde el pool "Stone" del ObjectPooler; cada una gasta una del StoneInventory
+//    (máximo 10, M1-4), que se reponen en los montículos (StonePile).
+//  - M1-1: los controles se leen del PlayerInputReader (InputSystem_Actions).
+//  - Si al Player le faltan PlayerShovel, PlayerInteractor, StoneInventory o PlayerInputReader, los agrega
+//    en runtime con un aviso en consola.
 // =================================================================================================
 
-using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
@@ -26,21 +23,19 @@ public class PlayerController : MonoBehaviour
     public float gravity = -20f;
     private float verticalVelocity;
 
-    [Header("Lanzar piedra (Clic Derecho o K)")]
+    [Header("Lanzar piedra (clic derecho, K o gatillo derecho)")]
     [Tooltip("Segundos mínimos entre lanzamientos")]
-    public float fireRate = 0.35f;
-    private float nextFire;
-    public Transform firePoint;
+    [FormerlySerializedAs("fireRate")]
+    public float throwCooldown = 0.35f;
+    private float nextThrow;
+    [Tooltip("Desde dónde sale la piedra (hijo FirePoint del Player)")]
+    [FormerlySerializedAs("firePoint")]
+    public Transform throwPoint;
 
     [Tooltip("Prefab del proyectil de piedra (Projectile_Stone). Se registra solo en el ObjectPooler con stonePoolTag.")]
     public GameObject stoneProjectilePrefab;
     public string stonePoolTag = "Stone";
     public int stonePoolSize = 12;
-
-    [Tooltip("Pool de respaldo si no hay prefab de piedra (el proyectil del TP1)")]
-    public string bulletPoolTag = "PlayerBullet";
-    [Tooltip("Prefab de respaldo si el ObjectPooler no está en la escena")]
-    public GameObject bulletFallbackPrefab;
 
     private StoneInventory stones;
     private PlayerInputReader input;
@@ -60,7 +55,7 @@ public class PlayerController : MonoBehaviour
     public enum FacingMode
     {
         MoveDirection,  // mira hacia donde camina; gira al mouse solo al pegar o tirar con el mouse
-        MouseAim        // siempre mira al mouse (comportamiento del TP1)
+        MouseAim        // siempre mira al mouse
     }
 
     [Header("Rotación")]
@@ -132,26 +127,26 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        if (firePoint == null)
+        if (throwPoint == null)
         {
             Transform found = transform.Find("FirePoint");
-            if (found != null) firePoint = found;
+            if (found != null) throwPoint = found;
         }
     }
 
     void OnEnable()
     {
-        PlayerHealth.OnPlayerRespawned += ResetShootingState;
+        PlayerHealth.OnPlayerRespawned += ResetThrowState;
     }
 
     void OnDisable()
     {
-        PlayerHealth.OnPlayerRespawned -= ResetShootingState;
+        PlayerHealth.OnPlayerRespawned -= ResetThrowState;
     }
 
     void Update()
     {
-        // Mientras se reproduce la animación de muerte o hay un diálogo abierto, el jugador no se mueve ni dispara
+        // Mientras se reproduce la animación de muerte o hay un diálogo abierto, el jugador no se mueve ni tira
         if ((health != null && health.IsDead) || DialogueSystem.BlocksGameplay)
         {
             UpdateMoveAnimation(Vector3.zero);
@@ -160,7 +155,7 @@ public class PlayerController : MonoBehaviour
 
         HandleMovement();
         HandleAiming();
-        HandleShooting();
+        HandleThrowing();
         HandleRotation();
     }
 
@@ -304,110 +299,56 @@ public class PlayerController : MonoBehaviour
         aimHoldUntil = Time.time + aimHoldTime;
     }
 
-    private void HandleShooting()
+    private void HandleThrowing()
     {
         // Controles del GDD: clic izquierdo/J = pala (PlayerShovel), clic derecho/K = piedra
         // Un lanzamiento por pulsación (no ráfaga): las piedras son pocas
         if (input == null || !input.ThrowPressed) return;
-        bool mouseShoot = input.ThrowFromPointer;
+        bool fromPointer = input.ThrowFromPointer;
 
-        if (Time.time >= nextFire)
+        if (Time.time >= nextThrow)
         {
             // Sin piedras no se lanza (StoneInventory avisa OnOutOfStones)
             if (stones != null && !stones.TryConsume()) return;
 
-            nextFire = Time.time + fireRate;
+            nextThrow = Time.time + throwCooldown;
             // Con el mouse se apunta al puntero; con K o el gamepad se tira hacia adelante
-            if (mouseShoot) FaceAimForAction();
+            if (fromPointer) FaceAimForAction();
             else currentAimPoint3D = transform.position + transform.forward * 10f + Vector3.up * 1f;
-            Shoot();
+            ThrowStone();
         }
     }
 
     /// <summary>Al reaparecer (PlayerHealth). Las piedras las repone StoneInventory.</summary>
-    public void ResetShootingState()
+    public void ResetThrowState()
     {
-        nextFire = 0f;
+        nextThrow = 0f;
         aimHoldUntil = 0f;
         currentAimPoint3D = transform.position + transform.forward * 10f;
     }
 
-    private void Shoot()
+    private void ThrowStone()
     {
-        Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position + transform.forward * 1.3f + Vector3.up * 1f;
+        Vector3 spawnPos = throwPoint != null ? throwPoint.position : transform.position + transform.forward * 1.3f + Vector3.up * 1f;
 
-        // Calcular la dirección exacta en 3D (X, Y, Z) hacia el punto apuntado.
-        // Esto permite que el proyectil viaje en diagonal hacia arriba en colinas o hacia abajo en zanjas.
-        Vector3 shootDir = (currentAimPoint3D - spawnPos).normalized;
-        if (shootDir.sqrMagnitude < 0.001f || Vector3.Dot(transform.forward, shootDir) < 0.1f)
+        // Dirección en 3D hacia el punto apuntado: la piedra sube en colinas y baja en zanjas
+        Vector3 throwDir = (currentAimPoint3D - spawnPos).normalized;
+        if (throwDir.sqrMagnitude < 0.001f || Vector3.Dot(transform.forward, throwDir) < 0.1f)
         {
-            shootDir = transform.forward;
+            throwDir = transform.forward;
         }
-        Quaternion spawnRot = Quaternion.LookRotation(shootDir);
+        Quaternion spawnRot = Quaternion.LookRotation(throwDir);
 
-        bool spawned = false;
+        GameObject stone = null;
+        if (ObjectPooler.Instance != null && ObjectPooler.Instance.HasPool(stonePoolTag))
+            stone = ObjectPooler.Instance.SpawnFromPool(stonePoolTag, spawnPos, spawnRot);
 
-        if (ObjectPooler.Instance != null)
-        {
-            // Primero el pool de piedras; si no está registrado, el proyectil del TP1
-            string poolTag = ObjectPooler.Instance.HasPool(stonePoolTag) ? stonePoolTag : bulletPoolTag;
-            GameObject pooledObj = ObjectPooler.Instance.SpawnFromPool(poolTag, spawnPos, spawnRot);
-            if (pooledObj != null)
-            {
-                Rigidbody rb = pooledObj.GetComponent<Rigidbody>();
-                if (rb == null)
-                {
-                    rb = pooledObj.AddComponent<Rigidbody>();
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                }
-                spawned = true;
-            }
-        }
+        // Sin ObjectPooler en la escena (escenas de prueba) se instancia directo
+        if (stone == null && stoneProjectilePrefab != null)
+            stone = Instantiate(stoneProjectilePrefab, spawnPos, spawnRot);
 
-        GameObject fallbackPrefab = stoneProjectilePrefab != null ? stoneProjectilePrefab : bulletFallbackPrefab;
-        if (!spawned && fallbackPrefab != null)
-        {
-            GameObject instObj = Instantiate(fallbackPrefab, spawnPos, spawnRot);
-            Rigidbody rb = instObj.GetComponent<Rigidbody>();
-            if (rb == null)
-            {
-                rb = instObj.AddComponent<Rigidbody>();
-                rb.isKinematic = true;
-                rb.useGravity = false;
-            }
-            spawned = true;
-        }
-
-        if (!spawned)
-        {
-            GameObject defaultBullet = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            defaultBullet.name = "Auto_Stone";
-            defaultBullet.transform.position = spawnPos;
-            defaultBullet.transform.rotation = spawnRot;
-            defaultBullet.transform.localScale = Vector3.one * 0.3f;
-
-            Renderer rend = defaultBullet.GetComponent<Renderer>();
-            if (rend != null)
-            {
-                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                mat.color = new Color(0.45f, 0.43f, 0.4f);
-                rend.material = mat;
-            }
-
-            Collider col = defaultBullet.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
-
-            Rigidbody rb = defaultBullet.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
-            PooledProjectile proj = defaultBullet.AddComponent<PooledProjectile>();
-            proj.speed = 18f;
-            proj.damage = 25;
-            proj.lifeTime = 1.5f;
-            proj.isPlayerProjectile = true;
-        }
+        if (stone == null)
+            Debug.LogWarning("[PlayerController] No hay prefab de piedra: asigná Projectile_Stone en stoneProjectilePrefab.");
 
         // M1-5: animación de lanzar piedra (la piedra ya se descontó en HandleShooting)
         if (animator != null) animator.SetTrigger(AnimThrow);

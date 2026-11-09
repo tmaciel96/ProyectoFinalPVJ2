@@ -1,13 +1,10 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Controlador de cámara cenital / vista de pájaro con ángulo top-down (~65°). Sigue con suavizado
-// Lerp al jugador en tiempo de ejecución e implementa SnapToTarget() vinculado al evento
-// OnPlayerRespawned para teletransportar la cámara de inmediato al reaparecer y no romper el apuntado 3D.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+// Basado en el CameraFollow del TP1 (The Pumpkin Ritual, Tamara Maciel).
+//
+// Cámara cenital (~65°) que sigue al sepulturero con un Lerp. Con SnapToTarget, enganchado a
+// PlayerHealth.OnPlayerRespawned, salta de inmediato al reaparecer en el checkpoint para no romper el
+// apuntado 3D.
 // =================================================================================================
 
 using UnityEngine;
