@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
     public float gravity = -20f;
     private float verticalVelocity;
 
-    [Header("Disparo (Clic Izquierdo o Espacio)")]
+    [Header("Lanzar piedra (Clic Derecho o K)")]
     public float fireRate = 0.2f;
     private float nextFire;
     public Transform firePoint;
@@ -46,12 +46,50 @@ public class PlayerController : MonoBehaviour
     [Header("Referencias")]
     public Camera cam;
     private CharacterController controller;
+    private PlayerHealth health;
     private Vector3 currentAimPoint3D;
+
+    [Header("Animación")]
+    [Tooltip("Animator del modelo (Player.controller). Si queda vacío se busca en los hijos; si no hay, se ignora.")]
+    public Animator animator;
+    [Tooltip("Suavizado de MoveX/MoveZ en el Blend Tree")]
+    public float animDampTime = 0.1f;
+
+    public enum FacingMode
+    {
+        MoveDirection,  // mira hacia donde camina; gira al mouse solo al pegar o tirar con el mouse
+        MouseAim        // siempre mira al mouse (comportamiento del TP1)
+    }
+
+    [Header("Rotación")]
+    public FacingMode facingMode = FacingMode.MoveDirection;
+    [Tooltip("Grados por segundo al girar hacia donde camina")]
+    public float turnSpeed = 720f;
+    [Tooltip("Segundos que sigue mirando al mouse después de pegar o tirar (modo MoveDirection)")]
+    public float aimHoldTime = 0.45f;
+    private float aimHoldUntil;
+    private Vector3 currentMoveDirection;
+
+    private static readonly int AnimMoveX = Animator.StringToHash("MoveX");
+    private static readonly int AnimMoveZ = Animator.StringToHash("MoveZ");
+    private static readonly int AnimAttack = Animator.StringToHash("Attack");
+    private static readonly int AnimThrow = Animator.StringToHash("Throw");
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        health = GetComponent<PlayerHealth>();
         if (cam == null) cam = Camera.main;
+
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator != null) animator.applyRootMotion = false; // el movimiento lo maneja el CharacterController
+
+        // La pala vive en su propio componente; si el prefab todavía no lo tiene, se agrega con valores por defecto
+        if (GetComponent<PlayerShovel>() == null)
+        {
+            Debug.LogWarning("[PlayerController] Falta PlayerShovel en el Player: se agrega en runtime. Sumalo al prefab para ajustar daño y alcance.");
+            gameObject.AddComponent<PlayerShovel>();
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -78,9 +116,17 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Mientras se reproduce la animación de muerte el jugador no se mueve ni dispara
+        if (health != null && health.IsDead)
+        {
+            UpdateMoveAnimation(Vector3.zero);
+            return;
+        }
+
         HandleMovement();
         HandleAiming();
         HandleShooting();
+        HandleRotation();
         HandleReloadInput();
     }
 
@@ -125,6 +171,28 @@ public class PlayerController : MonoBehaviour
 
         Vector3 finalMove = (moveDirection * speed) + new Vector3(0f, verticalVelocity, 0f);
         controller.Move(finalMove * Time.deltaTime);
+
+        currentMoveDirection = moveDirection;
+        UpdateMoveAnimation(moveDirection);
+    }
+
+    /// <summary>
+    /// Pasa la dirección de movimiento (mundo) al espacio local del personaje: así el Blend Tree 2D
+    /// muestra correr de frente, de espaldas o de costado según hacia dónde mira.
+    /// </summary>
+    private void UpdateMoveAnimation(Vector3 worldMoveDirection)
+    {
+        if (animator == null) return;
+
+        Vector3 local = transform.InverseTransformDirection(worldMoveDirection);
+        animator.SetFloat(AnimMoveX, local.x, animDampTime, Time.deltaTime);
+        animator.SetFloat(AnimMoveZ, local.z, animDampTime, Time.deltaTime);
+    }
+
+    /// <summary>Dispara la animación del golpe con la pala (la lógica de daño es la tarea M1-3).</summary>
+    public void PlayAttackAnimation()
+    {
+        if (animator != null) animator.SetTrigger(AnimAttack);
     }
 
     private void HandleAiming()
@@ -164,6 +232,29 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+    }
+
+    /// <summary>
+    /// MouseAim: siempre al mouse. MoveDirection: hacia donde camina, salvo justo después de pegar o tirar
+    /// con el mouse, que mira al puntero durante aimHoldTime para que el golpe vaya donde se apuntó.
+    /// </summary>
+    private void HandleRotation()
+    {
+        if (facingMode == FacingMode.MouseAim || Time.time < aimHoldUntil)
+        {
+            FaceAimPointInstant();
+            return;
+        }
+
+        if (currentMoveDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion target = Quaternion.LookRotation(currentMoveDirection, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnSpeed * Time.deltaTime);
+        }
+    }
+
+    private void FaceAimPointInstant()
+    {
         // El avatar del jugador rota horizontalmente en el plano XZ para no inclinarse hacia el suelo
         Vector3 horizontalLook = new Vector3(currentAimPoint3D.x, transform.position.y, currentAimPoint3D.z);
         if ((horizontalLook - transform.position).sqrMagnitude > 0.05f)
@@ -172,12 +263,25 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Gira de inmediato hacia el mouse y lo sostiene aimHoldTime. Lo usan la pala y la piedra cuando
+    /// la acción se hizo con el mouse; con J/K se pega hacia donde ya mira el personaje.
+    /// </summary>
+    public void FaceAimForAction()
+    {
+        if (cam == null || Mouse.current == null) return;
+        HandleAiming(); // punto actualizado aunque se llame antes que el Update de este script
+        FaceAimPointInstant();
+        aimHoldUntil = Time.time + aimHoldTime;
+    }
+
     private void HandleShooting()
     {
-        bool mouseShoot = Mouse.current != null && Mouse.current.leftButton.isPressed;
-        bool spaceShoot = Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
+        // Controles del GDD: clic izquierdo/J = pala (PlayerShovel), clic derecho/K = piedra
+        bool mouseShoot = Mouse.current != null && Mouse.current.rightButton.isPressed;
+        bool keyShoot = Keyboard.current != null && Keyboard.current.kKey.isPressed;
 
-        if ((mouseShoot || spaceShoot) && Time.time >= nextFire)
+        if ((mouseShoot || keyShoot) && Time.time >= nextFire)
         {
             if (isReloading) return;
 
@@ -188,6 +292,9 @@ public class PlayerController : MonoBehaviour
             }
 
             nextFire = Time.time + fireRate;
+            // Con el mouse se apunta al puntero; con K se tira hacia adelante
+            if (mouseShoot) FaceAimForAction();
+            else currentAimPoint3D = transform.position + transform.forward * 10f + Vector3.up * 1f;
             Shoot();
         }
     }
@@ -320,6 +427,9 @@ public class PlayerController : MonoBehaviour
             proj.isPlayerProjectile = true;
         }
 
+        // El disparo actual pasa a ser "lanzar piedra" (M1-5): misma animación
+        if (animator != null) animator.SetTrigger(AnimThrow);
+
         currentAmmo--;
         OnAmmoChanged?.Invoke(currentAmmo, maxAmmo, false);
 
@@ -333,7 +443,8 @@ public class PlayerController : MonoBehaviour
     {
         if (Keyboard.current != null)
         {
-            return Keyboard.current.eKey.wasPressedThisFrame;
+            // GDD: E o Espacio para interactuar
+            return Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame;
         }
         return false;
     }
