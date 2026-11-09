@@ -77,13 +77,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5.5
   gravity: -20
-  fireRate: 0.25
-  firePoint: {fileID: 8168126434635415019}
+  throwCooldown: 0.25
+  throwPoint: {fileID: 8168126434635415019}
   stoneProjectilePrefab: {fileID: 6122983997982631527, guid: ea22b1a77ac34c84ea9d9e6b1428de84, type: 3}
   stonePoolTag: Stone
   stonePoolSize: 12
-  bulletPoolTag: PlayerBullet
-  bulletFallbackPrefab: {fileID: 0}
   cam: {fileID: 0}
   animator: {fileID: 0}
   animDampTime: 0.1
@@ -107,7 +105,6 @@ MonoBehaviour:
   spawnPoint: {fileID: 0}
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.15
-  invulnerabilityDuration: 0.25
   animator: {fileID: 0}
   deathAnimDuration: 2
 --- !u!114 &4214655840491815903

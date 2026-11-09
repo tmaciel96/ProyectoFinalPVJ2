@@ -1,13 +1,11 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Implementación del patrón de diseño Object Pooling (Singleton) para optimización de rendimiento.
-// Administra colas reutilizables de proyectiles del jugador, proyectiles enemigos y coleccionables,
-// evitando la sobrecarga de memoria y caídas de frames asociadas al Instantiate/Destroy frecuente.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+// Basado en el ObjectPooler del TP1 (The Pumpkin Ritual, Tamara Maciel).
+//
+// Object Pooling (singleton): colas de objetos reutilizables para no hacer Instantiate/Destroy en cada
+// disparo. Los pools se cargan desde la lista de la escena (proyectiles y enemigos) o se registran en
+// runtime con RegisterPool, como las piedras del jugador (M1-5). A los pooled con NavMeshAgent les apaga
+// el agente si no hay NavMesh horneado cerca.
 // =================================================================================================
 
 using System.Collections.Generic;

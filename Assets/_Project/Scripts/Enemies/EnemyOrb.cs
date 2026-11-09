@@ -504,12 +504,11 @@ public class EnemyOrb : MonoBehaviour, IDamageable
     {
         if (isDead) return;
 
-        PooledProjectile bullet = other.GetComponent<PooledProjectile>();
-        if (bullet == null) bullet = other.GetComponentInParent<PooledProjectile>();
-        if (bullet != null && bullet.isPlayerProjectile)
+        Projectile projectile = other.GetComponentInParent<Projectile>();
+        if (projectile != null && projectile.isPlayerProjectile)
         {
-            TakeDamage(bullet.damage);
-            bullet.Deactivate();
+            TakeDamage(projectile.damage);
+            projectile.Deactivate();
         }
     }
 
