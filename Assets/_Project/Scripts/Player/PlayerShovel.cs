@@ -2,7 +2,7 @@
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // M1-3 · Golpe con la pala: ataque frontal de corto alcance con cooldown.
-// Clic izquierdo o J inicia el golpe; tras hitDelay (el momento en que la pala baja en la
+// Clic izquierdo, J o X del gamepad (acción Attack del PlayerInputReader) inicia el golpe; tras hitDelay (el momento en que la pala baja en la
 // animación) se revisa una esfera delante del sepulturero y se daña a cada IDamageable una vez.
 //
 // Cuando exista la capa "Enemy" (M5-3), asignarla en hitLayers para no revisar todo el escenario.
@@ -42,6 +42,7 @@ public class PlayerShovel : MonoBehaviour
     private float nextSwingTime;
     private PlayerController playerController;
     private PlayerHealth playerHealth;
+    private PlayerInputReader input;
     private readonly Collider[] overlapBuffer = new Collider[24];
     private readonly HashSet<IDamageable> alreadyHit = new HashSet<IDamageable>();
 
@@ -49,6 +50,7 @@ public class PlayerShovel : MonoBehaviour
     {
         playerController = GetComponent<PlayerController>();
         playerHealth = GetComponent<PlayerHealth>();
+        input = PlayerController.EnsureInput(gameObject);
     }
 
     void OnEnable()
@@ -68,11 +70,9 @@ public class PlayerShovel : MonoBehaviour
         if (DialogueSystem.BlocksGameplay) return; // el clic que avanza un diálogo no es un palazo
         if (Time.time < nextSwingTime) return;
 
-        bool mouse = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
-        bool key = Keyboard.current != null && Keyboard.current.jKey.wasPressedThisFrame;
-
-        if (mouse || key)
+        if (input != null && input.AttackPressed)
         {
+            bool mouse = input.AttackFromPointer;
             nextSwingTime = Time.time + cooldown;
             // Con el mouse gira hacia el puntero antes del golpe; con J pega hacia donde ya mira
             if (mouse && playerController != null) playerController.FaceAimForAction();
