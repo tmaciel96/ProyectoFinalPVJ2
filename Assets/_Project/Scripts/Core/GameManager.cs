@@ -217,7 +217,7 @@ public class GameManager : MonoBehaviour
             {
                 healthFillImage.color = new Color(0.2f, 0.85f, 0.2f);
             }
-            else if (pct > 0.34f) // con 3 corazones: 1 solo corazón ya se ve en rojo
+            else if (pct > 0.25f)
             {
                 healthFillImage.color = new Color(1f, 0.75f, 0.1f);
             }
@@ -229,7 +229,7 @@ public class GameManager : MonoBehaviour
 
         if (healthText != null)
         {
-            healthText.text = $"Corazones: {current} / {max}";
+            healthText.text = $"Vida: {current} / {max} HP";
         }
     }
 

@@ -19,15 +19,14 @@ public class PickupItem : MonoBehaviour
 {
     public enum PickupType
     {
-        HealthPotion,   // Recupera heartsHealed corazones
+        HealthPotion,   // Recupera healthAmount puntos de vida
         TimeBonus       // Resta -15 segundos al cronómetro (da más tiempo de vida)
     }
 
     [Header("Tipo y Beneficio")]
     public PickupType type = PickupType.HealthPotion;
-    [Tooltip("Corazones que recupera la poción de vida")]
-    public int heartsHealed = 1;
-    [HideInInspector] public int healthAmount = 25; // valor del TP1 (vida en HP), ya no se usa
+    [Tooltip("Puntos de vida que recupera la poción de vida")]
+    public int healthAmount = 25;
     public float timeAmount = 15f;
 
     [Header("Caída y Altura en el Terreno")]
@@ -182,7 +181,7 @@ public class PickupItem : MonoBehaviour
             {
                 PlayerHealth health = hitObject.GetComponent<PlayerHealth>();
                 if (health == null) health = hitObject.GetComponentInParent<PlayerHealth>();
-                if (health != null) health.Heal(heartsHealed);
+                if (health != null) health.Heal(healthAmount);
             }
             else if (type == PickupType.TimeBonus)
             {

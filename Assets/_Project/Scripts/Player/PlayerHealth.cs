@@ -3,13 +3,13 @@
 // Basado en el PlayerHealth del TP1 (The Pumpkin Ritual, Tamara Maciel).
 //
 // Vida y reaparición del sepulturero:
-//  - M1-8: 3 corazones enteros. Cada golpe enemigo quita 1 corazón (el valor de daño que mandan los
-//    enemigos del TP1 se ignora; si algún enemigo tiene que quitar más, usa TakeHearts).
+//  - M1-8: 100 puntos de vida (decisión del grupo, en lugar de los 3 corazones del GDD). Cada enemigo
+//    quita lo que manda en TakeDamage, así el espectro puede pegar más fuerte que el zombi.
 //    OnHealthChanged(actual, máximo) avisa al HUD.
 //  - M1-9: después de cada golpe hay invulnerabilityTime segundos sin recibir daño, con el modelo
 //    parpadeando.
-//  - M1-10: al morir reaparece en el checkpoint del sector actual (CheckpointManager) con los corazones
-//    llenos. Si no hay checkpoint, usa el objeto con tag SpawnPoint como antes.
+//  - M1-10: al morir reaparece en el checkpoint del sector actual (CheckpointManager) con la vida
+//    llena. Si no hay checkpoint, usa el objeto con tag SpawnPoint como antes.
 // =================================================================================================
 
 using System;
@@ -18,9 +18,9 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("Vida (corazones)")]
-    public int maxHearts = 3;
-    [SerializeField] private int currentHearts;
+    [Header("Vida")]
+    public int maxHealth = 100;
+    [SerializeField] private int currentHealth;
 
     [Header("Invulnerabilidad tras un golpe")]
     [Tooltip("Segundos sin recibir daño después de cada golpe")]
@@ -41,13 +41,14 @@ public class PlayerHealth : MonoBehaviour
     private static readonly int AnimHit = Animator.StringToHash("Hit");
     private static readonly int AnimDead = Animator.StringToHash("Dead");
 
-    public int CurrentHearts => currentHearts;
-    /// <summary>True desde que los corazones llegan a 0 hasta que reaparece.</summary>
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
+    /// <summary>True desde que la vida llega a 0 hasta que reaparece.</summary>
     public bool IsDead { get; private set; }
     public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     // Eventos
-    /// <summary>(corazones actuales, máximo)</summary>
+    /// <summary>(vida actual, máximo)</summary>
     public static event Action<int, int> OnHealthChanged;
     public static event Action OnPlayerDamaged;
     public static event Action OnPlayerRespawned;
@@ -61,7 +62,7 @@ public class PlayerHealth : MonoBehaviour
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
-        currentHearts = maxHearts;
+        currentHealth = maxHealth;
         if (animator == null) animator = GetComponentInChildren<Animator>();
         renderers = GetComponentsInChildren<Renderer>(true);
     }
@@ -74,30 +75,20 @@ public class PlayerHealth : MonoBehaviour
             if (sp != null) spawnPoint = sp.transform;
         }
 
-        OnHealthChanged?.Invoke(currentHearts, maxHearts);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
-    /// <summary>
-    /// Golpe de un enemigo. Con corazones enteros todos los golpes quitan 1, sin importar amount
-    /// (los enemigos y proyectiles del TP1 siguen mandando su daño en HP).
-    /// </summary>
+    /// <summary>Golpe de un enemigo o proyectil: resta amount puntos de vida.</summary>
     public void TakeDamage(int amount)
     {
-        if (amount <= 0) return;
-        TakeHearts(1);
-    }
-
-    /// <summary>Quita una cantidad exacta de corazones (por ejemplo un golpe fuerte del espectro).</summary>
-    public void TakeHearts(int hearts)
-    {
-        if (IsDead || hearts <= 0) return;
+        if (IsDead || amount <= 0) return;
         if (IsInvulnerable) return;
 
-        currentHearts = Mathf.Max(0, currentHearts - hearts);
-        OnHealthChanged?.Invoke(currentHearts, maxHearts);
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
         OnPlayerDamaged?.Invoke();
 
-        if (currentHearts <= 0)
+        if (currentHealth <= 0)
         {
             Die();
             return;
@@ -110,12 +101,12 @@ public class PlayerHealth : MonoBehaviour
         blinkCoroutine = StartCoroutine(BlinkRoutine());
     }
 
-    /// <summary>Recupera corazones sin pasar del máximo.</summary>
-    public void Heal(int hearts)
+    /// <summary>Recupera vida sin pasar del máximo.</summary>
+    public void Heal(int amount)
     {
-        if (IsDead || hearts <= 0) return;
-        currentHearts = Mathf.Min(currentHearts + hearts, maxHearts);
-        OnHealthChanged?.Invoke(currentHearts, maxHearts);
+        if (IsDead || amount <= 0) return;
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     // ---------------------------------------------------------------- M1-9: parpadeo
@@ -194,13 +185,13 @@ public class PlayerHealth : MonoBehaviour
         IsDead = false;
         if (animator != null) animator.SetBool(AnimDead, false);
 
-        currentHearts = maxHearts;
+        currentHealth = maxHealth;
         StopBlink();
         // Un instante de gracia al aparecer, para no recibir un golpe en el mismo frame
         invulnerableUntil = Time.time + invulnerabilityTime;
         blinkCoroutine = StartCoroutine(BlinkRoutine());
 
-        OnHealthChanged?.Invoke(currentHearts, maxHearts);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         // M1-10: el checkpoint del sector actual; si no hay, el SpawnPoint de la escena
         Transform target = CheckpointManager.Current != null ? CheckpointManager.Current : spawnPoint;
