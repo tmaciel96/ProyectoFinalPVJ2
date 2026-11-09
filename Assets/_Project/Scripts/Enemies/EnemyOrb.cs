@@ -17,7 +17,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(Collider))]
-public class EnemyOrb : MonoBehaviour
+public class EnemyOrb : MonoBehaviour, IDamageable
 {
     public enum OrbType
     {
@@ -72,6 +72,20 @@ public class EnemyOrb : MonoBehaviour
     public Color hitFlashColor = Color.white;
     public float flashDuration = 0.12f;
 
+    [Header("Animación (Skeleton.controller / Zombie.controller)")]
+    [Tooltip("Si queda vacío se busca en los hijos; los orbes sin Animator siguen funcionando igual")]
+    public Animator animator;
+    [Tooltip("Segundos que se deja ver la animación de muerte antes de volver al pool")]
+    public float deathAnimDuration = 2f;
+
+    private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+    private static readonly int AnimAttack = Animator.StringToHash("Attack");
+    private static readonly int AnimHit = Animator.StringToHash("Hit");
+    private static readonly int AnimDead = Animator.StringToHash("Dead");
+
+    private Vector3 lastPosition;
+    private Coroutine deathCoroutine;
+
     private NavMeshAgent agent;
     private Transform playerTarget;
     private PlayerHealth playerHealth;
@@ -113,6 +127,9 @@ public class EnemyOrb : MonoBehaviour
             gameObject.tag = "Enemy";
         }
 
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator != null) animator.applyRootMotion = false; // lo mueve el NavMeshAgent
+
         CacheColors();
     }
 
@@ -146,7 +163,16 @@ public class EnemyOrb : MonoBehaviour
         isDead = false;
         lastAttackTime = 0f;
         originSpawnPosition = transform.position;
+        lastPosition = transform.position;
         isChasing = false;
+
+        // Volver del pool "vivo": collider activo y Animator en locomoción
+        if (enemyCollider != null) enemyCollider.enabled = true;
+        if (animator != null && animator.isInitialized)
+        {
+            animator.SetBool(AnimDead, false);
+            animator.SetFloat(AnimSpeed, 0f);
+        }
 
         if (agent != null)
         {
@@ -298,6 +324,19 @@ public class EnemyOrb : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        if (isDead || animator == null) return;
+
+        // Velocidad horizontal real (sirve tanto con NavMeshAgent como con el movimiento de respaldo)
+        Vector3 delta = transform.position - lastPosition;
+        delta.y = 0f;
+        float speed = Time.deltaTime > 0f ? delta.magnitude / Time.deltaTime : 0f;
+        lastPosition = transform.position;
+
+        animator.SetFloat(AnimSpeed, speed, 0.1f, Time.deltaTime);
+    }
+
     private void MoveTowards(Vector3 targetPos)
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
@@ -341,15 +380,9 @@ public class EnemyOrb : MonoBehaviour
                 continue;
             }
 
-            // Encontró el terreno real
-            float halfHeight = 1f;
-            if (enemyCollider != null)
-            {
-                halfHeight = enemyCollider.bounds.extents.y;
-            }
-
-            // Si snapToGround está activo, la base de la cápsula se apoya en el suelo (hit.point.y)
-            float targetY = snapToGround ? hit.point.y + halfHeight + groundOffset : hit.point.y + hoverHeight;
+            // Encontró el terreno real.
+            // Si snapToGround está activo, la base del collider se apoya en el suelo (hit.point.y)
+            float targetY = snapToGround ? hit.point.y + PivotToColliderBottom() + groundOffset : hit.point.y + hoverHeight;
             float smoothY = Mathf.Lerp(transform.position.y, targetY, Time.deltaTime * terrainFollowSpeed);
             transform.position = new Vector3(transform.position.x, smoothY, transform.position.z);
             break;
@@ -370,18 +403,26 @@ public class EnemyOrb : MonoBehaviour
                 continue;
             }
 
-            float halfHeight = 1f;
-            if (enemyCollider != null) halfHeight = enemyCollider.bounds.extents.y;
-
-            float targetY = snapToGround ? hit.point.y + halfHeight + groundOffset : hit.point.y + hoverHeight;
+            float targetY = snapToGround ? hit.point.y + PivotToColliderBottom() + groundOffset : hit.point.y + hoverHeight;
             transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
             break;
         }
     }
 
+    /// <summary>
+    /// Distancia del pivote a la base del collider. En los orbes el pivote está en el centro (= media altura);
+    /// en esqueleto y zombi está en los pies (= 0), así quedan parados en el piso y no flotando.
+    /// </summary>
+    private float PivotToColliderBottom()
+    {
+        if (enemyCollider == null) return 1f;
+        return transform.position.y - enemyCollider.bounds.min.y;
+    }
+
     private void PerformMeleeAttack()
     {
         lastAttackTime = Time.time;
+        if (animator != null) animator.SetTrigger(AnimAttack);
         if (playerHealth != null)
         {
             playerHealth.TakeDamage(attackDamage);
@@ -391,6 +432,7 @@ public class EnemyOrb : MonoBehaviour
     private void PerformRangedAttack()
     {
         lastAttackTime = Time.time;
+        if (animator != null) animator.SetTrigger(AnimAttack);
         Vector3 spawnPos = shootPoint != null ? shootPoint.position : transform.position + transform.forward * 1f;
         Vector3 targetChest = playerTarget != null ? playerTarget.position + Vector3.up * 1f : transform.position + transform.forward * 5f;
         Quaternion spawnRot = Quaternion.LookRotation((targetChest - spawnPos).normalized);
@@ -399,6 +441,13 @@ public class EnemyOrb : MonoBehaviour
         {
             ObjectPooler.Instance.SpawnFromPool(enemyBulletPoolTag, spawnPos, spawnRot);
         }
+    }
+
+    /// <summary>IDamageable: pala, piedra y cualquier fuente con origen conocido.</summary>
+    public void TakeDamage(int amount, Vector3 origin)
+    {
+        // El origen queda disponible para el retroceso del espectro (M4-3)
+        TakeDamage(amount);
     }
 
     public void TakeDamage(int amount)
@@ -415,6 +464,10 @@ public class EnemyOrb : MonoBehaviour
         {
             isDead = true;
             Die();
+        }
+        else if (animator != null)
+        {
+            animator.SetTrigger(AnimHit);
         }
     }
 
@@ -479,6 +532,34 @@ public class EnemyOrb : MonoBehaviour
             }
         }
 
+        // Sin Animator (orbes del TP1) se desactiva en el acto, como antes
+        if (animator == null || deathAnimDuration <= 0f)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        // Con Animator: frenar, dejar de recibir golpes y mostrar la muerte antes de volver al pool
+        animator.ResetTrigger(AnimAttack);
+        animator.ResetTrigger(AnimHit);
+        animator.SetFloat(AnimSpeed, 0f);
+        animator.SetBool(AnimDead, true);
+
+        if (enemyCollider != null) enemyCollider.enabled = false;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+        }
+
+        if (deathCoroutine != null) StopCoroutine(deathCoroutine);
+        deathCoroutine = StartCoroutine(DeactivateAfterDeath());
+    }
+
+    private IEnumerator DeactivateAfterDeath()
+    {
+        yield return new WaitForSeconds(deathAnimDuration);
+        deathCoroutine = null;
         gameObject.SetActive(false);
     }
 

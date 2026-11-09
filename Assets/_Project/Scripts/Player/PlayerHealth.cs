@@ -30,6 +30,19 @@ public class PlayerHealth : MonoBehaviour
     public float invulnerabilityDuration = 0.25f;
     private float lastDamageTime = -1f;
 
+    [Header("Animación")]
+    [Tooltip("Animator del modelo (Player.controller). Si queda vacío se busca en los hijos.")]
+    public Animator animator;
+    [Tooltip("Segundos que se deja ver la animación de muerte antes de reaparecer")]
+    public float deathAnimDuration = 2f;
+
+    private static readonly int AnimHit = Animator.StringToHash("Hit");
+    private static readonly int AnimDead = Animator.StringToHash("Dead");
+
+    /// <summary>True desde que la vida llega a 0 hasta que reaparece.</summary>
+    public bool IsDead { get; private set; }
+    private Coroutine deathCoroutine;
+
     private CharacterController characterController;
     private Renderer[] allRenderers;
     private Dictionary<Renderer, Color[]> originalColors = new Dictionary<Renderer, Color[]>();
@@ -44,6 +57,7 @@ public class PlayerHealth : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         currentHealth = maxHealth;
+        if (animator == null) animator = GetComponentInChildren<Animator>();
         CacheOriginalColors();
     }
 
@@ -102,6 +116,10 @@ public class PlayerHealth : MonoBehaviour
         {
             Die();
         }
+        else if (animator != null)
+        {
+            animator.SetTrigger(AnimHit);
+        }
     }
 
     private IEnumerator DamageFlashRoutine()
@@ -146,7 +164,28 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
+        if (IsDead) return;
+        IsDead = true;
         Debug.Log("Player ha muerto. Reapareciendo en el SpawnPoint...");
+
+        if (animator != null)
+        {
+            animator.ResetTrigger(AnimHit);
+            animator.SetBool(AnimDead, true);
+        }
+
+        if (deathCoroutine != null) StopCoroutine(deathCoroutine);
+        deathCoroutine = StartCoroutine(DeathRoutine());
+    }
+
+    private IEnumerator DeathRoutine()
+    {
+        // Sin Animator no hay nada que mostrar: reaparece en el acto, como antes
+        if (animator != null && deathAnimDuration > 0f)
+            yield return new WaitForSeconds(deathAnimDuration);
+
+        deathCoroutine = null;
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnPlayerDied();
@@ -159,6 +198,15 @@ public class PlayerHealth : MonoBehaviour
 
     public void Respawn()
     {
+        if (deathCoroutine != null)
+        {
+            StopCoroutine(deathCoroutine);
+            deathCoroutine = null;
+        }
+
+        IsDead = false;
+        if (animator != null) animator.SetBool(AnimDead, false);
+
         currentHealth = maxHealth;
         lastDamageTime = -1f;
 

@@ -106,7 +106,17 @@ public class PooledProjectile : MonoBehaviour
                 Deactivate();
                 return;
             }
-            else if (hitObject.CompareTag("Enemy"))
+            // Otros enemigos que no son orbes (por ejemplo la Tumba Maldita) a través del contrato común
+            IDamageable damageable = hitObject.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(damage, transform.position);
+                SpawnImpactEffect();
+                Deactivate();
+                return;
+            }
+
+            if (hitObject.CompareTag("Enemy"))
             {
                 // Si tiene el tag Enemy pero el script estaba en otro nivel
                 EnemyOrb rootEnemy = hitObject.transform.root.GetComponentInChildren<EnemyOrb>();

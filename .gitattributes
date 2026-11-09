@@ -170,9 +170,6 @@ Packages/packages-lock.json linguist-generated
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
 
-# Escena demo del package (binaria): sin conversion de saltos de linea (la corrompe)
-DEMO_02_Graveyard.unity -text
-
 # TerrainData de Unity se guarda en binario aunque sea .asset: sin conversion de saltos de linea (la corrompe)
 *TerrainData*.asset     binary
 Assets/_Project/Terrain/*.asset binary
