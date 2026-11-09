@@ -23,6 +23,11 @@ public class PlayerController : MonoBehaviour
     public float gravity = -20f;
     private float verticalVelocity;
 
+    [Header("Retroceso (golpe del espectro, M4-3)")]
+    [Tooltip("Metros por segundo que pierde el empujón por segundo")]
+    public float knockbackDecay = 25f;
+    private Vector3 knockbackVelocity;
+
     [Header("Lanzar piedra (clic derecho, K o gatillo derecho)")]
     [Tooltip("Segundos mínimos entre lanzamientos")]
     [FormerlySerializedAs("fireRate")]
@@ -192,8 +197,9 @@ public class PlayerController : MonoBehaviour
             verticalVelocity += gravity * Time.deltaTime;
         }
 
-        Vector3 finalMove = (moveDirection * speed) + new Vector3(0f, verticalVelocity, 0f);
+        Vector3 finalMove = (moveDirection * speed) + new Vector3(0f, verticalVelocity, 0f) + knockbackVelocity;
         controller.Move(finalMove * Time.deltaTime);
+        knockbackVelocity = Vector3.MoveTowards(knockbackVelocity, Vector3.zero, knockbackDecay * Time.deltaTime);
 
         currentMoveDirection = moveDirection;
         UpdateMoveAnimation(moveDirection);
@@ -325,6 +331,15 @@ public class PlayerController : MonoBehaviour
         nextThrow = 0f;
         aimHoldUntil = 0f;
         currentAimPoint3D = transform.position + transform.forward * 10f;
+        knockbackVelocity = Vector3.zero;
+    }
+
+    /// <summary>Empuja al sepulturero en una dirección horizontal (se frena solo con knockbackDecay).</summary>
+    public void ApplyKnockback(Vector3 direction, float force)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f || force <= 0f) return;
+        knockbackVelocity = direction.normalized * force;
     }
 
     private void ThrowStone()
