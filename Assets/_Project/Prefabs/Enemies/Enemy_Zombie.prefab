@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6372229252265522569}
   - component: {fileID: 2270427847092372907}
   m_Layer: 0
-  m_Name: Zombie
+  m_Name: Enemy_Zombie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65627aeea7124ec46b58d063eb40f782, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyOrb
-  orbType: 0
+  orbType: 1
   maxHealth: 50
   currentHealth: 0
   attackDamage: 15

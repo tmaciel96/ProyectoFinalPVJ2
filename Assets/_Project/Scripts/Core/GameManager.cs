@@ -111,6 +111,7 @@ public class GameManager : MonoBehaviour
         PlayerHealth.OnHealthChanged += UpdateHealthBar;
         PlayerHealth.OnPlayerDamaged += TriggerDamageVignette;
         PlayerController.OnAmmoChanged += UpdateAmmoDisplay;
+        PlayerInteractor.OnFocusChanged += ShowInteractionPrompt;
 
         UpdateRunesDisplay();
         UpdateTimerDisplay(timeElapsed);
@@ -149,6 +150,7 @@ public class GameManager : MonoBehaviour
         PlayerHealth.OnHealthChanged -= UpdateHealthBar;
         PlayerHealth.OnPlayerDamaged -= TriggerDamageVignette;
         PlayerController.OnAmmoChanged -= UpdateAmmoDisplay;
+        PlayerInteractor.OnFocusChanged -= ShowInteractionPrompt;
     }
 
     void Update()
@@ -167,8 +169,6 @@ public class GameManager : MonoBehaviour
             UpdateTimerDisplay(timeElapsed);
             OnTimeExpired();
         }
-
-        UpdateInteractionPrompt();
     }
 
     private void UpdateTimerDisplay(float time)
@@ -268,26 +268,14 @@ public class GameManager : MonoBehaviour
         damageVignette.color = c;
     }
 
-    private void UpdateInteractionPrompt()
+    // El texto "Presiona [E] para ..." lo decide el PlayerInteractor (M1-7) con el interactuable más cercano
+    private void ShowInteractionPrompt(IInteractable focused)
     {
         if (interactionPrompt == null) return;
 
-        bool anyInRange = false;
-        RuneAltar[] altars = FindObjectsByType<RuneAltar>(FindObjectsSortMode.None);
-        foreach (var altar in altars)
-        {
-            if (altar != null && altar.IsPlayerInRange())
-            {
-                anyInRange = true;
-                break;
-            }
-        }
-
-        interactionPrompt.gameObject.SetActive(anyInRange);
-        if (anyInRange)
-        {
-            interactionPrompt.text = "Presiona [E] para purificar el Altar";
-        }
+        bool show = focused != null;
+        interactionPrompt.gameObject.SetActive(show);
+        if (show) interactionPrompt.text = $"Presiona [E] para {focused.InteractionPrompt}";
     }
 
     public void AddTime(float amount)

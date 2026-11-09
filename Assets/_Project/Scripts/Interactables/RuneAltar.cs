@@ -12,7 +12,8 @@
 
 using UnityEngine;
 
-public class RuneAltar : MonoBehaviour
+// M1-7: es IInteractable; la tecla y el aviso del HUD los maneja el PlayerInteractor.
+public class RuneAltar : MonoBehaviour, IInteractable
 {
     [Header("Configuración del Altar")]
     public float interactionDistance = 3f;
@@ -26,36 +27,14 @@ public class RuneAltar : MonoBehaviour
     public Renderer runeRenderer;
     public Material activatedMaterial;
 
-    private Transform playerTransform;
-    private PlayerController playerController;
-    private bool playerInRange = false;
+    void OnEnable()  { PlayerInteractor.Register(this); }
+    void OnDisable() { PlayerInteractor.Unregister(this); }
 
-    void Start()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            playerTransform = player.transform;
-            playerController = player.GetComponent<PlayerController>();
-        }
-    }
-
-    void Update()
-    {
-        if (isActivated || playerTransform == null) return;
-
-        float distance = Vector3.Distance(transform.position, playerTransform.position);
-        playerInRange = distance <= interactionDistance;
-
-        // Comprobar interacción si el jugador está en rango
-        if (playerInRange && playerController != null)
-        {
-            if (playerController.WasInteractPressed())
-            {
-                ActivateAltar();
-            }
-        }
-    }
+    public string InteractionPrompt => "purificar el altar";
+    public Vector3 InteractionPoint => transform.position;
+    public float InteractionRadius => interactionDistance;
+    public bool CanInteract(GameObject interactor) => !isActivated;
+    public void Interact(GameObject interactor) => ActivateAltar();
 
     public void ActivateAltar()
     {
@@ -82,11 +61,6 @@ public class RuneAltar : MonoBehaviour
         }
 
         Debug.Log("Altar Rúnico purificado y activado.");
-    }
-
-    public bool IsPlayerInRange()
-    {
-        return playerInRange && !isActivated;
     }
 
     void OnDrawGizmosSelected()

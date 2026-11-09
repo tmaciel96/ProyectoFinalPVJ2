@@ -5,21 +5,20 @@
 // detecta al sepulturero, avisa con un pulso de luz y le dispara un proyectil del pool "EnemyBullet".
 //
 // Se apaga (deja de disparar para siempre, o hasta Rekindle) de alguna de estas formas, según extinguishMode:
-//   - Interact: acercarse y presionar E/Espacio, como las velas del vampiro (misión 3).
+//   - Interact: acercarse y presionar E (vía PlayerInteractor), como las velas del vampiro (misión 3).
 //   - Shovel:   golpear la luz con la pala o la piedra (wispHealth golpes).
 //   - Both:     cualquiera de las dos.
 //   - ScriptOnly: solo desde código, por ejemplo cuando la misión del vampiro deja el sector en penumbra.
 // Cada tumba apagada avisa con OnTombExtinguished, para que la misión cuente cuántas quedan.
 //
-// Cuando exista IInteractable / PlayerInteractor (M1-7, M2-2) el modo Interact debería pasar por ahí.
+// Es IInteractable: el PlayerInteractor muestra "Presiona [E] para apagar la tumba maldita" y la apaga.
 // =================================================================================================
 
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class CursedTomb : MonoBehaviour, IDamageable
+public class CursedTomb : MonoBehaviour, IDamageable, IInteractable
 {
     public enum ExtinguishMode { Interact, Shovel, Both, ScriptOnly }
 
@@ -53,7 +52,7 @@ public class CursedTomb : MonoBehaviour, IDamageable
     public GameObject projectileFallbackPrefab;
 
     [Header("Apagado")]
-    [Tooltip("Distancia para apagarla con E/Espacio (modo Interact)")]
+    [Tooltip("Distancia para apagarla con E (modo Interact)")]
     public float interactRadius = 2.2f;
     [Tooltip("Golpes de pala o piedra para apagarla (modo Shovel)")]
     public int wispHealth = 2;
@@ -89,6 +88,12 @@ public class CursedTomb : MonoBehaviour, IDamageable
     {
         if (startLit) Rekindle();
         else SetLitVisuals(false, instant: true);
+        PlayerInteractor.Register(this);
+    }
+
+    void OnDisable()
+    {
+        PlayerInteractor.Unregister(this);
     }
 
     void Update()
@@ -100,12 +105,6 @@ public class CursedTomb : MonoBehaviour, IDamageable
         if (playerHealth != null && playerHealth.IsDead) return;
 
         float dist = Vector3.Distance(transform.position, player.position);
-
-        if (CanInteract() && dist <= interactRadius && WasInteractPressed())
-        {
-            Extinguish();
-            return;
-        }
 
         if (attackRoutine == null && Time.time >= nextFireTime && dist <= detectionRange && HasLineOfSight())
             attackRoutine = StartCoroutine(AttackRoutine());
@@ -205,15 +204,18 @@ public class CursedTomb : MonoBehaviour, IDamageable
 
     // ---------------------------------------------------------------- Apagado por interacción
 
-    private bool CanInteract()
+    public string InteractionPrompt => "apagar la tumba maldita";
+    public Vector3 InteractionPoint => transform.position;
+    public float InteractionRadius => interactRadius;
+
+    public bool CanInteract(GameObject interactor)
     {
-        return extinguishMode == ExtinguishMode.Interact || extinguishMode == ExtinguishMode.Both;
+        return IsLit && (extinguishMode == ExtinguishMode.Interact || extinguishMode == ExtinguishMode.Both);
     }
 
-    private bool WasInteractPressed()
+    public void Interact(GameObject interactor)
     {
-        var kb = Keyboard.current;
-        return kb != null && (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
+        if (CanInteract(interactor)) Extinguish();
     }
 
     // ---------------------------------------------------------------- Visuales

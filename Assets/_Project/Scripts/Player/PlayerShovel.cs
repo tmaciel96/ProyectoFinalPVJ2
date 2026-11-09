@@ -65,6 +65,7 @@ public class PlayerShovel : MonoBehaviour
     void Update()
     {
         if (playerHealth != null && playerHealth.IsDead) return;
+        if (DialogueSystem.BlocksGameplay) return; // el clic que avanza un diálogo no es un palazo
         if (Time.time < nextSwingTime) return;
 
         bool mouse = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
