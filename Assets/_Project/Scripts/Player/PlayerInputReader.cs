@@ -84,7 +84,9 @@ public class PlayerInputReader : MonoBehaviour
         if (map == null) return;
         if (attack != null) attack.performed += HandleAttack;
         if (throwAction != null) throwAction.performed += HandleThrow;
-        if (interact != null) interact.performed += HandleInteract;
+        // started y no performed: en InputSystem_Actions la acción Interact tiene "Hold", y performed
+        // recién llega después de mantener la tecla medio segundo. started llega al apretar, con o sin Hold.
+        if (interact != null) interact.started += HandleInteract;
         if (pause != null) pause.performed += HandlePause;
         map.Enable();
     }
@@ -94,7 +96,7 @@ public class PlayerInputReader : MonoBehaviour
         if (map == null) return;
         if (attack != null) attack.performed -= HandleAttack;
         if (throwAction != null) throwAction.performed -= HandleThrow;
-        if (interact != null) interact.performed -= HandleInteract;
+        if (interact != null) interact.started -= HandleInteract;
         if (pause != null) pause.performed -= HandlePause;
         map.Disable();
     }
