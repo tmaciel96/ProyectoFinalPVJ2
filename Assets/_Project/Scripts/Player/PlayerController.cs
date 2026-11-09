@@ -91,6 +91,13 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<PlayerShovel>();
         }
 
+        // Lo mismo con la interacción (M1-7)
+        if (GetComponent<PlayerInteractor>() == null)
+        {
+            Debug.LogWarning("[PlayerController] Falta PlayerInteractor en el Player: se agrega en runtime. Sumalo al prefab.");
+            gameObject.AddComponent<PlayerInteractor>();
+        }
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -116,8 +123,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // Mientras se reproduce la animación de muerte el jugador no se mueve ni dispara
-        if (health != null && health.IsDead)
+        // Mientras se reproduce la animación de muerte o hay un diálogo abierto, el jugador no se mueve ni dispara
+        if ((health != null && health.IsDead) || DialogueSystem.BlocksGameplay)
         {
             UpdateMoveAnimation(Vector3.zero);
             return;
@@ -437,15 +444,5 @@ public class PlayerController : MonoBehaviour
         {
             StartReload();
         }
-    }
-
-    public bool WasInteractPressed()
-    {
-        if (Keyboard.current != null)
-        {
-            // GDD: E o Espacio para interactuar
-            return Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame;
-        }
-        return false;
     }
 }
