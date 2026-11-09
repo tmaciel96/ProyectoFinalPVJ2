@@ -5,7 +5,7 @@
 // detecta al sepulturero, avisa con un pulso de luz y le dispara un proyectil del pool "EnemyBullet".
 //
 // Se apaga (deja de disparar para siempre, o hasta Rekindle) de alguna de estas formas, según extinguishMode:
-//   - Interact: acercarse y presionar E/Espacio, como las velas del vampiro (misión 3).
+//   - Interact: acercarse y presionar E, como las velas del vampiro (misión 3).
 //   - Shovel:   golpear la luz con la pala o la piedra (wispHealth golpes).
 //   - Both:     cualquiera de las dos.
 //   - ScriptOnly: solo desde código, por ejemplo cuando la misión del vampiro deja el sector en penumbra.
@@ -53,7 +53,7 @@ public class CursedTomb : MonoBehaviour, IDamageable
     public GameObject projectileFallbackPrefab;
 
     [Header("Apagado")]
-    [Tooltip("Distancia para apagarla con E/Espacio (modo Interact)")]
+    [Tooltip("Distancia para apagarla con E (modo Interact)")]
     public float interactRadius = 2.2f;
     [Tooltip("Golpes de pala o piedra para apagarla (modo Shovel)")]
     public int wispHealth = 2;
@@ -213,7 +213,8 @@ public class CursedTomb : MonoBehaviour, IDamageable
     private bool WasInteractPressed()
     {
         var kb = Keyboard.current;
-        return kb != null && (kb.eKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
+        // Solo E: Espacio ya lo usa el IntroDialogue
+        return kb != null && kb.eKey.wasPressedThisFrame;
     }
 
     // ---------------------------------------------------------------- Visuales
