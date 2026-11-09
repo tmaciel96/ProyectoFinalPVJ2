@@ -5,7 +5,8 @@
 // Completada desactiva los colliders que bloquean, cambia lo visual (cerrada / abierta), suena y,
 // si tiene una hoja asignada, la desliza o gira hasta quedar abierta.
 // Se elige la misión en el Inspector: la reja del sector 1 usa la misión de la Bruja, etc.
-// (El checkpoint de cada sector es M2-6.)
+// M2-6: si tiene asignado el Checkpoint del sector que libera, al abrirse lo vuelve el punto de
+// reaparición (así no hace falta volver a pisarlo para no perder el avance).
 // =================================================================================================
 
 using System.Collections;
@@ -35,6 +36,10 @@ public class QuestGate : MonoBehaviour
     [Tooltip("Giro local de la hoja al abrir (grados)")]
     public Vector3 openRotation = new Vector3(0f, 100f, 0f);
     public float openDuration = 1.5f;
+
+    [Header("Sector siguiente (M2-6)")]
+    [Tooltip("Checkpoint a la entrada del sector que libera esta reja (opcional)")]
+    public Checkpoint nextSectorCheckpoint;
 
     [Header("Sonido y eventos")]
     public AudioSource openAudio;
@@ -95,6 +100,8 @@ public class QuestGate : MonoBehaviour
             if (animate && openDuration > 0f && isActiveAndEnabled) StartCoroutine(AnimateLeaf());
             else SetLeaf(1f);
         }
+
+        if (nextSectorCheckpoint != null) nextSectorCheckpoint.Activate();
 
         if (animate)
         {
