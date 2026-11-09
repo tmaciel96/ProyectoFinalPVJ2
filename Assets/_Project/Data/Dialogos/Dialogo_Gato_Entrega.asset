@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
+  m_Name: Dialogo_Gato_Entrega
+  m_EditorClassIdentifier: 
+  defaultSpeaker: "Gato Negro"
+  lines:
+  - speaker: "Gato Negro"
+    message: "Todas en su lugar. Las almas ya pueden recordar qui\u00E9nes fueron."
+  - speaker: "Gato Negro"
+    message: "Prrr... La quinta runa brilla. And\u00E1 al port\u00F3n, sepulturero: terminaste tu turno."

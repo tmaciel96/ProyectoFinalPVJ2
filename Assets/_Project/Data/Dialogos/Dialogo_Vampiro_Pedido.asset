@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
+  m_Name: Dialogo_Vampiro_Pedido
+  m_EditorClassIdentifier: 
+  defaultSpeaker: "Vampiro"
+  lines:
+  - speaker: "Vampiro"
+    message: "Buenas noches, estimado sepulturero. Disculpe usted la luz: alguien encendi\u00F3 todas las velas de mi capilla."
+  - speaker: "Vampiro"
+    message: "Tanta claridad me resulta... insoportable. \u00BFSer\u00EDa tan amable de apagarlas una por una?"
+  - speaker: "Vampiro"
+    message: "Le prometo que su gentileza ser\u00E1 recompensada."

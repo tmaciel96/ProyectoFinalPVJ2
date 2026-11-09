@@ -20,7 +20,7 @@ public class PickupItem : MonoBehaviour
     public enum PickupType
     {
         HealthPotion,   // Recupera healthAmount puntos de vida
-        TimeBonus       // Resta -15 segundos al cronómetro (da más tiempo de vida)
+        TimeBonus       // Del TP1: ya no hay cronómetro (M2-7), no hace nada. Se deja por los prefabs viejos
     }
 
     [Header("Tipo y Beneficio")]
@@ -185,10 +185,7 @@ public class PickupItem : MonoBehaviour
             }
             else if (type == PickupType.TimeBonus)
             {
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.AddTime(timeAmount);
-                }
+                Debug.LogWarning("PickupItem: TimeBonus ya no hace nada (no hay cronómetro).");
             }
 
             if (collectVFX != null)

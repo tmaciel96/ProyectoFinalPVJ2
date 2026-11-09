@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
+  m_Name: Dialogo_Esqueleto_Pedido
+  m_EditorClassIdentifier: 
+  defaultSpeaker: "Guardi\u00E1n Esqueleto"
+  lines:
+  - speaker: "Guardi\u00E1n Esqueleto"
+    message: "\u00A1Sepulturero! Qu\u00E9 alegr\u00EDa verte. Bueno, verte... me entend\u00E9s."
+  - speaker: "Guardi\u00E1n Esqueleto"
+    message: "Unos zombis se metieron en mi parcela y no dejan dormir a nadie. Son flojitos, pero son muchos."
+  - speaker: "Guardi\u00E1n Esqueleto"
+    message: "\u00BFMe ayud\u00E1s a sacarlos con esa pala? Yo te aliento desde ac\u00E1."

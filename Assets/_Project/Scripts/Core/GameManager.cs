@@ -1,16 +1,15 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Gestor principal del juego (Singleton). Controla el estado global de la partida (intro, juego activo,
-// victoria y derrota), el temporizador ascendente de la "Hora de las Brujas" (00:00 a 03:33 = 213s),
-// el conteo de purificación de los 3 altares rúnicos, penalizaciones de tiempo al morir (+20s),
-// actualización del HUD de vida y munición, y el cableado automático de botones en pantallas finales.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+//
+// GameManager (M2-7): gestor principal del nivel (Singleton).
+//  - Estados de la partida: Intro (habla el espíritu), Jugando y Victoria. Sin cronómetro ni derrota:
+//    morir solo te devuelve al checkpoint del sector (M1-10).
+//  - Runas 0/5: las cuenta el QuestManager (una por misión completada). Con las 5 se abren el portón
+//    principal (QuestGate) y el portal; al cruzarlo, OnPlayerEscaped muestra la pantalla de victoria.
+//  - HUD de vida, piedras, aviso de interacción y viñeta de daño; botones de la pantalla de victoria.
 // =================================================================================================
 
+using System;
 using System.Collections;
 using UnityEngine;
 using TMPro;
@@ -21,15 +20,16 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Cronómetro (Comienza en 00:00 y finaliza a las 3:33 = 213s)")]
-    public float timeElapsed = 0f;
-    public float maxTime = 213f; // 3 min 33 seg (La Hora de las Brujas)
-    public bool timerIsActive = true;
-    public TextMeshProUGUI timerText;
+    public enum GameState { Intro, Jugando, Victoria }
 
-    [Header("Objetivos")]
-    public int totalRunes = 3;
-    public int runesActivated = 0;
+    [Header("Estado de la partida")]
+    [SerializeField] private GameState state = GameState.Jugando;
+    public GameState State => state;
+    /// <summary>Avisa los cambios de estado (HUD, música, enemigos que se calman en la intro).</summary>
+    public static event Action<GameState> OnStateChanged;
+
+    [Header("Runas (una por misión; las cuenta el QuestManager)")]
+    [Tooltip("Texto \"Runas: 0 / 5\" del HUD")]
     public TextMeshProUGUI runesText;
     public ExitPortal escapePortal;
 
@@ -45,10 +45,17 @@ public class GameManager : MonoBehaviour
     public float vignetteFadeSpeed = 3f;
     private Coroutine vignetteCoroutine;
 
-    [Header("Paneles de Fin de Juego")]
+    [Header("Pantalla de Victoria")]
     public GameObject victoryPanel;
+    [Tooltip("Texto del panel de victoria (opcional): si está asignado se reemplaza por victoryMessage")]
+    public TextMeshProUGUI victoryText;
+    [TextArea] public string victoryMessage = "¡Las cinco runas brillan otra vez!\nLas almas del cementerio descansan: terminó el turno del sepulturero.";
+
+    [Header("Restos del TP1 (se ocultan al empezar; se pueden borrar de la escena)")]
+    [Tooltip("Texto del viejo cronómetro de las 3:33")]
+    public TextMeshProUGUI timerText;
+    [Tooltip("Panel de derrota por tiempo: ya no hay derrota")]
     public GameObject defeatPanel;
-    public TextMeshProUGUI defeatReasonText;
 
     private PlayerHealth playerHealth;
 
@@ -72,6 +79,7 @@ public class GameManager : MonoBehaviour
         if (victoryPanel != null) victoryPanel.SetActive(false);
         if (defeatPanel != null) defeatPanel.SetActive(false);
         if (interactionPrompt != null) interactionPrompt.gameObject.SetActive(false);
+        if (timerText != null) timerText.gameObject.SetActive(false);
 
         // Auto-encontrar portal si no fue asignado en el Inspector
         if (escapePortal == null)
@@ -100,7 +108,6 @@ public class GameManager : MonoBehaviour
 
         // Auto-vincular botones de los paneles para que funcionen 100% garantizados
         AutoWirePanelButtons(victoryPanel);
-        AutoWirePanelButtons(defeatPanel);
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -112,9 +119,10 @@ public class GameManager : MonoBehaviour
         PlayerHealth.OnPlayerDamaged += TriggerDamageVignette;
         StoneInventory.OnStonesChanged += UpdateStonesDisplay;
         PlayerInteractor.OnFocusChanged += ShowInteractionPrompt;
+        QuestManager.OnQuestStateChanged += HandleQuestChanged;
+        QuestManager.OnAllQuestsCompleted += HandleAllQuestsCompleted;
 
         UpdateRunesDisplay();
-        UpdateTimerDisplay(timeElapsed);
 
         // El inventario pudo avisar antes de que el HUD se suscribiera: pedir el valor actual
         StoneInventory stones = playerObj != null ? playerObj.GetComponent<StoneInventory>() : null;
@@ -155,49 +163,46 @@ public class GameManager : MonoBehaviour
         PlayerHealth.OnPlayerDamaged -= TriggerDamageVignette;
         StoneInventory.OnStonesChanged -= UpdateStonesDisplay;
         PlayerInteractor.OnFocusChanged -= ShowInteractionPrompt;
+        QuestManager.OnQuestStateChanged -= HandleQuestChanged;
+        QuestManager.OnAllQuestsCompleted -= HandleAllQuestsCompleted;
     }
 
-    void Update()
-    {
-        if (!timerIsActive) return;
+    // ---------------------------------------------------------------- Estados
 
-        if (timeElapsed < maxTime)
-        {
-            timeElapsed += Time.deltaTime;
-            UpdateTimerDisplay(timeElapsed);
-        }
-        else
-        {
-            timeElapsed = maxTime;
-            timerIsActive = false;
-            UpdateTimerDisplay(timeElapsed);
-            OnTimeExpired();
-        }
+    /// <summary>La llama IntroDialogue al empezar a hablar el espíritu.</summary>
+    public void BeginIntro() => SetState(GameState.Intro);
+
+    /// <summary>Fin de la intro: empieza el juego.</summary>
+    public void StartPlaying()
+    {
+        if (state == GameState.Intro) SetState(GameState.Jugando);
     }
 
-    private void UpdateTimerDisplay(float time)
+    private void SetState(GameState newState)
     {
-        if (timerText == null) return;
+        if (state == newState) return;
+        state = newState;
+        OnStateChanged?.Invoke(newState);
+    }
 
-        int minutes = Mathf.FloorToInt(time / 60f);
-        int seconds = Mathf.FloorToInt(time % 60f);
-        timerText.text = string.Format("{0:0}:{1:00}", minutes, seconds);
+    // ---------------------------------------------------------------- Runas
 
-        if (time >= maxTime - 30f)
-        {
-            timerText.color = Color.red;
-        }
-        else
-        {
-            timerText.color = Color.white;
-        }
+    private void HandleQuestChanged(QuestId id, QuestState questState) => UpdateRunesDisplay();
+
+    private void HandleAllQuestsCompleted()
+    {
+        // El portón (QuestGate) y el portal escuchan al QuestManager por su cuenta; esto es por si el
+        // portal estaba desactivado cuando se completó la quinta misión
+        if (escapePortal == null) escapePortal = FindFirstObjectByType<ExitPortal>();
+        if (escapePortal != null) escapePortal.UnlockPortal();
+        Debug.Log("<color=yellow>Las 5 runas están encendidas: el portón principal se abrió.</color>");
     }
 
     private void UpdateRunesDisplay()
     {
         if (runesText != null)
         {
-            runesText.text = $"Altares: {runesActivated} / {totalRunes}";
+            runesText.text = $"Runas: {QuestManager.CompletedCount} / {QuestManager.QuestCount}";
         }
     }
 
@@ -276,31 +281,6 @@ public class GameManager : MonoBehaviour
         if (show) interactionPrompt.text = $"Presiona [E] para {focused.InteractionPrompt}";
     }
 
-    public void AddTime(float amount)
-    {
-        timeElapsed = Mathf.Max(0f, timeElapsed - amount);
-        UpdateTimerDisplay(timeElapsed);
-    }
-
-    public void ActivateRune()
-    {
-        runesActivated++;
-        UpdateRunesDisplay();
-
-        if (runesActivated >= totalRunes)
-        {
-            if (escapePortal == null)
-            {
-                escapePortal = FindFirstObjectByType<ExitPortal>();
-            }
-
-            if (escapePortal != null)
-            {
-                escapePortal.UnlockPortal();
-            }
-        }
-    }
-
     /// <summary>M1-10: reaparece en el checkpoint del sector, sin sumar tiempo ni reiniciar sectores.</summary>
     public void OnPlayerDied()
     {
@@ -310,33 +290,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void OnTimeExpired()
-    {
-        Time.timeScale = 0f;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        if (defeatPanel != null)
-        {
-            defeatPanel.SetActive(true);
-            defeatPanel.transform.SetAsLastSibling(); // Poner al frente de cualquier otra imagen
-            if (defeatReasonText != null)
-            {
-                defeatReasonText.text = "¡El reloj marcó las 3:33, es la Hora de las Brujas y las sombras consumieron el cementerio!";
-            }
-        }
-    }
-
     public void OnPlayerEscaped()
     {
+        if (state == GameState.Victoria) return;
         Debug.Log("<color=green>¡Victoria! Escapaste por el portal rúnico.</color>");
-        timerIsActive = false;
+        SetState(GameState.Victoria);
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
         if (victoryPanel != null)
         {
+            if (victoryText != null && !string.IsNullOrEmpty(victoryMessage)) victoryText.text = victoryMessage;
             victoryPanel.SetActive(true);
             victoryPanel.transform.SetAsLastSibling(); // Poner al frente de cualquier otra imagen
         }
@@ -354,5 +319,12 @@ public class GameManager : MonoBehaviour
         Debug.Log("<color=cyan>Cargando Menú Principal (00_MainMenu)...</color>");
         Time.timeScale = 1f;
         SceneManager.LoadScene("00_MainMenu");
+    }
+
+    // Con "Enter Play Mode" sin recargar dominio los estáticos sobreviven
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        OnStateChanged = null;
     }
 }
