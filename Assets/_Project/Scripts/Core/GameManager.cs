@@ -217,7 +217,7 @@ public class GameManager : MonoBehaviour
             {
                 healthFillImage.color = new Color(0.2f, 0.85f, 0.2f);
             }
-            else if (pct > 0.25f)
+            else if (pct > 0.34f) // con 3 corazones: 1 solo corazón ya se ve en rojo
             {
                 healthFillImage.color = new Color(1f, 0.75f, 0.1f);
             }
@@ -229,7 +229,7 @@ public class GameManager : MonoBehaviour
 
         if (healthText != null)
         {
-            healthText.text = $"Vida: {current} / {max} HP";
+            healthText.text = $"Corazones: {current} / {max}";
         }
     }
 
@@ -301,15 +301,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>M1-10: reaparece en el checkpoint del sector, sin sumar tiempo ni reiniciar sectores.</summary>
     public void OnPlayerDied()
     {
         if (playerHealth != null)
         {
             playerHealth.Respawn();
         }
-
-        timeElapsed = Mathf.Min(maxTime, timeElapsed + 20f);
-        UpdateTimerDisplay(timeElapsed);
     }
 
     public void OnTimeExpired()

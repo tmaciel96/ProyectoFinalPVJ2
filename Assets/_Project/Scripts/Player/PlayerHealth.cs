@@ -1,34 +1,36 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Sistema de salud y reaparición del jugador. Controla los puntos de vida (100 HP), tiempo de
-// inmunidad temporal contra golpes continuos, feedback visual de daño con destello rojo en los materiales,
-// eventos para el HUD de vida y la secuencia de muerte con respawn en el SpawnPoint.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+// Basado en el PlayerHealth del TP1 (The Pumpkin Ritual, Tamara Maciel).
+//
+// Vida y reaparición del sepulturero:
+//  - M1-8: 3 corazones enteros. Cada golpe enemigo quita 1 corazón (el valor de daño que mandan los
+//    enemigos del TP1 se ignora; si algún enemigo tiene que quitar más, usa TakeHearts).
+//    OnHealthChanged(actual, máximo) avisa al HUD.
+//  - M1-9: después de cada golpe hay invulnerabilityTime segundos sin recibir daño, con el modelo
+//    parpadeando.
+//  - M1-10: al morir reaparece en el checkpoint del sector actual (CheckpointManager) con los corazones
+//    llenos. Si no hay checkpoint, usa el objeto con tag SpawnPoint como antes.
 // =================================================================================================
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("Salud")]
-    public int maxHealth = 100;
-    public int currentHealth;
+    [Header("Vida (corazones)")]
+    public int maxHearts = 3;
+    [SerializeField] private int currentHearts;
 
-    [Header("Punto de Reaparición")]
+    [Header("Invulnerabilidad tras un golpe")]
+    [Tooltip("Segundos sin recibir daño después de cada golpe")]
+    public float invulnerabilityTime = 1.2f;
+    [Tooltip("Segundos entre parpadeos del modelo mientras es invulnerable")]
+    public float blinkInterval = 0.1f;
+
+    [Header("Punto de reaparición de respaldo")]
+    [Tooltip("Se usa solo si no hay ningún checkpoint activado. Si queda vacío se busca el tag SpawnPoint.")]
     public Transform spawnPoint;
-
-    [Header("Feedback de Daño Visual")]
-    public Color damageFlashColor = Color.red;
-    public float flashDuration = 0.15f;
-    public float invulnerabilityDuration = 0.25f;
-    private float lastDamageTime = -1f;
 
     [Header("Animación")]
     [Tooltip("Animator del modelo (Player.controller). Si queda vacío se busca en los hijos.")]
@@ -39,48 +41,29 @@ public class PlayerHealth : MonoBehaviour
     private static readonly int AnimHit = Animator.StringToHash("Hit");
     private static readonly int AnimDead = Animator.StringToHash("Dead");
 
-    /// <summary>True desde que la vida llega a 0 hasta que reaparece.</summary>
+    public int CurrentHearts => currentHearts;
+    /// <summary>True desde que los corazones llegan a 0 hasta que reaparece.</summary>
     public bool IsDead { get; private set; }
-    private Coroutine deathCoroutine;
-
-    private CharacterController characterController;
-    private Renderer[] allRenderers;
-    private Dictionary<Renderer, Color[]> originalColors = new Dictionary<Renderer, Color[]>();
-    private Coroutine flashCoroutine;
+    public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     // Eventos
+    /// <summary>(corazones actuales, máximo)</summary>
     public static event Action<int, int> OnHealthChanged;
     public static event Action OnPlayerDamaged;
     public static event Action OnPlayerRespawned;
 
+    private CharacterController characterController;
+    private Renderer[] renderers;
+    private float invulnerableUntil;
+    private Coroutine deathCoroutine;
+    private Coroutine blinkCoroutine;
+
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
-        currentHealth = maxHealth;
+        currentHearts = maxHearts;
         if (animator == null) animator = GetComponentInChildren<Animator>();
-        CacheOriginalColors();
-    }
-
-    private void CacheOriginalColors()
-    {
-        allRenderers = GetComponentsInChildren<Renderer>();
-        foreach (var rend in allRenderers)
-        {
-            if (rend != null && rend.materials != null)
-            {
-                Color[] colors = new Color[rend.materials.Length];
-                for (int i = 0; i < rend.materials.Length; i++)
-                {
-                    if (rend.materials[i].HasProperty("_Color"))
-                        colors[i] = rend.materials[i].color;
-                    else if (rend.materials[i].HasProperty("_BaseColor"))
-                        colors[i] = rend.materials[i].GetColor("_BaseColor");
-                    else
-                        colors[i] = Color.white;
-                }
-                originalColors[rend] = colors;
-            }
-        }
+        renderers = GetComponentsInChildren<Renderer>(true);
     }
 
     void Start()
@@ -91,82 +74,92 @@ public class PlayerHealth : MonoBehaviour
             if (sp != null) spawnPoint = sp.transform;
         }
 
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        OnHealthChanged?.Invoke(currentHearts, maxHearts);
     }
 
+    /// <summary>
+    /// Golpe de un enemigo. Con corazones enteros todos los golpes quitan 1, sin importar amount
+    /// (los enemigos y proyectiles del TP1 siguen mandando su daño en HP).
+    /// </summary>
     public void TakeDamage(int amount)
     {
-        if (currentHealth <= 0) return;
+        if (amount <= 0) return;
+        TakeHearts(1);
+    }
 
-        if (Time.time < lastDamageTime + invulnerabilityDuration) return;
-        lastDamageTime = Time.time;
+    /// <summary>Quita una cantidad exacta de corazones (por ejemplo un golpe fuerte del espectro).</summary>
+    public void TakeHearts(int hearts)
+    {
+        if (IsDead || hearts <= 0) return;
+        if (IsInvulnerable) return;
 
-        currentHealth -= amount;
-        if (currentHealth < 0) currentHealth = 0;
-
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        currentHearts = Mathf.Max(0, currentHearts - hearts);
+        OnHealthChanged?.Invoke(currentHearts, maxHearts);
         OnPlayerDamaged?.Invoke();
 
-        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
-        flashCoroutine = StartCoroutine(DamageFlashRoutine());
-
-        Debug.Log($"<color=red>¡Player recibió {amount} de daño! Vida restante: {currentHealth}/{maxHealth}</color>");
-
-        if (currentHealth <= 0)
+        if (currentHearts <= 0)
         {
             Die();
+            return;
         }
-        else if (animator != null)
-        {
-            animator.SetTrigger(AnimHit);
-        }
+
+        if (animator != null) animator.SetTrigger(AnimHit);
+
+        invulnerableUntil = Time.time + invulnerabilityTime;
+        if (blinkCoroutine != null) StopCoroutine(blinkCoroutine);
+        blinkCoroutine = StartCoroutine(BlinkRoutine());
     }
 
-    private IEnumerator DamageFlashRoutine()
+    /// <summary>Recupera corazones sin pasar del máximo.</summary>
+    public void Heal(int hearts)
     {
-        foreach (var rend in allRenderers)
-        {
-            if (rend == null) continue;
-            foreach (var mat in rend.materials)
-            {
-                if (mat.HasProperty("_Color")) mat.color = damageFlashColor;
-                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", damageFlashColor);
-            }
-        }
-
-        yield return new WaitForSeconds(flashDuration);
-
-        RestoreOriginalColors();
+        if (IsDead || hearts <= 0) return;
+        currentHearts = Mathf.Min(currentHearts + hearts, maxHearts);
+        OnHealthChanged?.Invoke(currentHearts, maxHearts);
     }
 
-    private void RestoreOriginalColors()
+    // ---------------------------------------------------------------- M1-9: parpadeo
+
+    private IEnumerator BlinkRoutine()
     {
-        foreach (var rend in allRenderers)
+        bool visible = true;
+        while (IsInvulnerable && !IsDead)
         {
-            if (rend == null || !originalColors.ContainsKey(rend)) continue;
-            Color[] colors = originalColors[rend];
-            for (int i = 0; i < rend.materials.Length; i++)
-            {
-                if (i < colors.Length)
-                {
-                    if (rend.materials[i].HasProperty("_Color")) rend.materials[i].color = colors[i];
-                    if (rend.materials[i].HasProperty("_BaseColor")) rend.materials[i].SetColor("_BaseColor", colors[i]);
-                }
-            }
+            visible = !visible;
+            SetVisible(visible);
+            yield return new WaitForSeconds(blinkInterval);
+        }
+        SetVisible(true);
+        blinkCoroutine = null;
+    }
+
+    private void StopBlink()
+    {
+        if (blinkCoroutine != null)
+        {
+            StopCoroutine(blinkCoroutine);
+            blinkCoroutine = null;
+        }
+        SetVisible(true);
+    }
+
+    private void SetVisible(bool visible)
+    {
+        foreach (Renderer r in renderers)
+        {
+            // Solo mallas: luces de partículas o efectos hijos no se tocan
+            if (r != null && (r is MeshRenderer || r is SkinnedMeshRenderer)) r.enabled = visible;
         }
     }
 
-    public void Heal(int amount)
-    {
-        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
-    }
+    // ---------------------------------------------------------------- Muerte y reaparición
 
     private void Die()
     {
         if (IsDead) return;
         IsDead = true;
-        Debug.Log("Player ha muerto. Reapareciendo en el SpawnPoint...");
+        StopBlink();
+        invulnerableUntil = 0f;
 
         if (animator != null)
         {
@@ -180,20 +173,14 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator DeathRoutine()
     {
-        // Sin Animator no hay nada que mostrar: reaparece en el acto, como antes
+        // Sin Animator no hay nada que mostrar: reaparece en el acto
         if (animator != null && deathAnimDuration > 0f)
             yield return new WaitForSeconds(deathAnimDuration);
 
         deathCoroutine = null;
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnPlayerDied();
-        }
-        else
-        {
-            Respawn();
-        }
+        if (GameManager.Instance != null) GameManager.Instance.OnPlayerDied();
+        else Respawn();
     }
 
     public void Respawn()
@@ -207,38 +194,24 @@ public class PlayerHealth : MonoBehaviour
         IsDead = false;
         if (animator != null) animator.SetBool(AnimDead, false);
 
-        currentHealth = maxHealth;
-        lastDamageTime = -1f;
+        currentHearts = maxHearts;
+        StopBlink();
+        // Un instante de gracia al aparecer, para no recibir un golpe en el mismo frame
+        invulnerableUntil = Time.time + invulnerabilityTime;
+        blinkCoroutine = StartCoroutine(BlinkRoutine());
 
-        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
-        RestoreOriginalColors();
+        OnHealthChanged?.Invoke(currentHearts, maxHearts);
 
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        // M1-10: el checkpoint del sector actual; si no hay, el SpawnPoint de la escena
+        Transform target = CheckpointManager.Current != null ? CheckpointManager.Current : spawnPoint;
+        Vector3 targetPos = target != null ? target.position : Vector3.zero;
+        Quaternion targetRot = target != null ? target.rotation : Quaternion.identity;
 
-        Vector3 targetPos = spawnPoint != null ? spawnPoint.position : Vector3.zero;
-        Quaternion targetRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
+        if (characterController != null) characterController.enabled = false;
+        transform.SetPositionAndRotation(targetPos, targetRot);
+        if (characterController != null) characterController.enabled = true;
 
-        if (characterController != null)
-        {
-            characterController.enabled = false;
-            transform.position = targetPos;
-            transform.rotation = targetRot;
-            characterController.enabled = true;
-        }
-        else
-        {
-            transform.position = targetPos;
-            transform.rotation = targetRot;
-        }
-
-        // Restablecer obligatoriamente munición y disparo en PlayerController
-        PlayerController pc = GetComponent<PlayerController>();
-        if (pc != null)
-        {
-            pc.ResetShootingState();
-        }
-
-        // Notificar que el jugador reapareció (la cámara se teletransporta de inmediato)
+        // PlayerController, PlayerShovel, StoneInventory y la cámara se reinician con este evento
         OnPlayerRespawned?.Invoke();
     }
 }
