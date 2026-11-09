@@ -1,21 +1,23 @@
 ﻿// =================================================================================================
-// Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
-// Autora: Tamara Maciel
-// Correo: tmaciel96@gmail.com
-// Repositorio: https://github.com/tmaciel96/PumpkinPolyTP
-// 
-// Descripción del script:
-// Altar rúnico interactuable del cementerio. Detecta la proximidad del jugador, muestra el prompt
-// de interacción en el HUD ("Presiona [E] para purificar altar"), cambia sus materiales, luces y
-// partículas a un estado bendito al activarse, y actualiza el contador de objetivos del GameManager.
+// Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
+//
+// RuneAltar (M2-4): la runa de una misión. Se enciende sola (luz, material, partículas y sonido)
+// cuando su misión pasa a Completada en el QuestManager; no hace falta acercarse.
+// Hay uno por misión: en el Inspector se elige cuál.
+// "Activación manual" deja encenderlo con [E] como en el TP1 (solo para pruebas; apagado por defecto).
+// Hasta M2-7 sigue avisando a GameManager.ActivateRune para que el portal se abra con las runas.
 // =================================================================================================
 
 using UnityEngine;
+using UnityEngine.Events;
 
-// M1-7: es IInteractable; la tecla y el aviso del HUD los maneja el PlayerInteractor.
 public class RuneAltar : MonoBehaviour, IInteractable
 {
-    [Header("Configuración del Altar")]
+    [Header("Misión")]
+    [Tooltip("La misión que enciende esta runa")]
+    public QuestId quest = QuestId.Bruja;
+    [Tooltip("Permite encenderlo con [E] sin completar la misión (pruebas / comportamiento del TP1)")]
+    public bool manualActivation = false;
     public float interactionDistance = 3f;
     public bool isActivated = false;
 
@@ -27,16 +29,45 @@ public class RuneAltar : MonoBehaviour, IInteractable
     public Renderer runeRenderer;
     public Material activatedMaterial;
 
-    void OnEnable()  { PlayerInteractor.Register(this); }
-    void OnDisable() { PlayerInteractor.Unregister(this); }
+    [Header("Eventos")]
+    public UnityEvent onActivated;
+
+    void OnEnable()
+    {
+        PlayerInteractor.Register(this);
+        QuestManager.OnQuestStateChanged += HandleQuestChanged;
+    }
+
+    void OnDisable()
+    {
+        PlayerInteractor.Unregister(this);
+        QuestManager.OnQuestStateChanged -= HandleQuestChanged;
+    }
+
+    void Start()
+    {
+        // Si la misión ya estaba completada antes de que el altar existiera, se enciende sin festejo
+        if (QuestManager.IsCompleted(quest)) ActivateAltar(playEffects: false);
+    }
+
+    // ---------------------------------------------------------------- IInteractable (solo manual)
 
     public string InteractionPrompt => "purificar el altar";
     public Vector3 InteractionPoint => transform.position;
     public float InteractionRadius => interactionDistance;
-    public bool CanInteract(GameObject interactor) => !isActivated;
+    public bool CanInteract(GameObject interactor) => manualActivation && !isActivated;
     public void Interact(GameObject interactor) => ActivateAltar();
 
-    public void ActivateAltar()
+    // ---------------------------------------------------------------- Activación
+
+    private void HandleQuestChanged(QuestId id, QuestState state)
+    {
+        if (id == quest && state == QuestState.Completada) ActivateAltar();
+    }
+
+    public void ActivateAltar() => ActivateAltar(playEffects: true);
+
+    private void ActivateAltar(bool playEffects)
     {
         if (isActivated) return;
         isActivated = true;
@@ -53,14 +84,16 @@ public class RuneAltar : MonoBehaviour, IInteractable
         }
 
         if (activationVFX != null) activationVFX.Play();
-        if (activationAudio != null) activationAudio.Play();
+        if (playEffects && activationAudio != null) activationAudio.Play();
 
+        // TODO M2-7: el GameManager va a contar las runas con QuestManager.CompletedCount
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ActivateRune();
         }
 
-        Debug.Log("Altar Rúnico purificado y activado.");
+        onActivated?.Invoke();
+        Debug.Log($"[RuneAltar] Runa de {quest} encendida.");
     }
 
     void OnDrawGizmosSelected()
@@ -69,4 +102,3 @@ public class RuneAltar : MonoBehaviour, IInteractable
         Gizmos.DrawWireSphere(transform.position, interactionDistance);
     }
 }
-
