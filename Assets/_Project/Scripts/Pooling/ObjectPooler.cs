@@ -70,6 +70,32 @@ public class ObjectPooler : MonoBehaviour
         }
     }
 
+    public bool HasPool(string tag)
+    {
+        return poolDictionary != null && !string.IsNullOrEmpty(tag) && poolDictionary.ContainsKey(tag);
+    }
+
+    /// <summary>
+    /// Crea un pool en runtime si todavía no existe (por ejemplo las piedras del jugador, M1-5),
+    /// así un sistema nuevo no obliga a editar la lista de pools de la escena.
+    /// </summary>
+    public bool RegisterPool(string tag, GameObject prefab, int size)
+    {
+        if (prefab == null || string.IsNullOrEmpty(tag) || size <= 0) return false;
+        if (poolDictionary == null) poolDictionary = new Dictionary<string, Queue<GameObject>>();
+        if (poolDictionary.ContainsKey(tag)) return false;
+
+        Queue<GameObject> objectPool = new Queue<GameObject>();
+        for (int i = 0; i < size; i++)
+        {
+            GameObject obj = Instantiate(prefab, transform);
+            obj.SetActive(false);
+            objectPool.Enqueue(obj);
+        }
+        poolDictionary.Add(tag, objectPool);
+        return true;
+    }
+
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)
     {
         if (poolDictionary == null || !poolDictionary.ContainsKey(tag))

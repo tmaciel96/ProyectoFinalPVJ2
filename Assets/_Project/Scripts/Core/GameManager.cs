@@ -110,11 +110,15 @@ public class GameManager : MonoBehaviour
 
         PlayerHealth.OnHealthChanged += UpdateHealthBar;
         PlayerHealth.OnPlayerDamaged += TriggerDamageVignette;
-        PlayerController.OnAmmoChanged += UpdateAmmoDisplay;
+        StoneInventory.OnStonesChanged += UpdateStonesDisplay;
         PlayerInteractor.OnFocusChanged += ShowInteractionPrompt;
 
         UpdateRunesDisplay();
         UpdateTimerDisplay(timeElapsed);
+
+        // El inventario pudo avisar antes de que el HUD se suscribiera: pedir el valor actual
+        StoneInventory stones = playerObj != null ? playerObj.GetComponent<StoneInventory>() : null;
+        if (stones != null) stones.Notify();
     }
 
     /// <summary>
@@ -149,7 +153,7 @@ public class GameManager : MonoBehaviour
     {
         PlayerHealth.OnHealthChanged -= UpdateHealthBar;
         PlayerHealth.OnPlayerDamaged -= TriggerDamageVignette;
-        PlayerController.OnAmmoChanged -= UpdateAmmoDisplay;
+        StoneInventory.OnStonesChanged -= UpdateStonesDisplay;
         PlayerInteractor.OnFocusChanged -= ShowInteractionPrompt;
     }
 
@@ -229,19 +233,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void UpdateAmmoDisplay(int current, int max, bool isReloading)
+    /// <summary>M1-4: contador de piedras (usa el mismo texto que antes mostraba la munición).</summary>
+    private void UpdateStonesDisplay(int current, int max)
     {
         if (ammoText == null) return;
 
-        if (isReloading)
-        {
-            ammoText.text = "<color=yellow>Recargando...</color>";
-        }
-        else
-        {
-            string colorTag = current <= 5 ? "<color=red>" : "<color=white>";
-            ammoText.text = $"Calabazas: {colorTag}{current}</color> / {max} <size=60%>[R: Recargar]</size>";
-        }
+        string colorTag = current <= 0 ? "<color=red>" : "<color=white>";
+        ammoText.text = $"Piedras: {colorTag}{current}</color> / {max}";
     }
 
     private void TriggerDamageVignette()

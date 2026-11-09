@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4917203731776861758}
   - component: {fileID: 3047202005003241507}
   - component: {fileID: 1719772924694365849}
+  - component: {fileID: 4214655840491815903}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -77,12 +78,11 @@ MonoBehaviour:
   gravity: -20
   fireRate: 0.25
   firePoint: {fileID: 8168126434635415019}
+  stoneProjectilePrefab: {fileID: 6122983997982631527, guid: ea22b1a77ac34c84ea9d9e6b1428de84, type: 3}
+  stonePoolTag: Stone
+  stonePoolSize: 12
   bulletPoolTag: PlayerBullet
   bulletFallbackPrefab: {fileID: 0}
-  maxAmmo: 20
-  currentAmmo: 20
-  reloadDuration: 1.2
-  isReloading: 0
   cam: {fileID: 0}
   animator: {fileID: 0}
   animDampTime: 0.1
@@ -109,6 +109,20 @@ MonoBehaviour:
   invulnerabilityDuration: 0.25
   animator: {fileID: 0}
   deathAnimDuration: 2
+--- !u!114 &4214655840491815903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4917203731776861747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1e7879183b846d99cdebfbcda780932, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoneInventory
+  maxStones: 10
+  startingStones: 5
 --- !u!1 &9023522073084470444
 GameObject:
   m_ObjectHideFlags: 0
