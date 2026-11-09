@@ -301,15 +301,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>M1-10: reaparece en el checkpoint del sector, sin sumar tiempo ni reiniciar sectores.</summary>
     public void OnPlayerDied()
     {
         if (playerHealth != null)
         {
             playerHealth.Respawn();
         }
-
-        timeElapsed = Mathf.Min(maxTime, timeElapsed + 20f);
-        UpdateTimerDisplay(timeElapsed);
     }
 
     public void OnTimeExpired()

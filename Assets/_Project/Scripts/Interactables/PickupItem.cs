@@ -19,12 +19,13 @@ public class PickupItem : MonoBehaviour
 {
     public enum PickupType
     {
-        HealthPotion,   // Restaura +25 de salud
+        HealthPotion,   // Recupera healthAmount puntos de vida
         TimeBonus       // Resta -15 segundos al cronómetro (da más tiempo de vida)
     }
 
     [Header("Tipo y Beneficio")]
     public PickupType type = PickupType.HealthPotion;
+    [Tooltip("Puntos de vida que recupera la poción de vida")]
     public int healthAmount = 25;
     public float timeAmount = 15f;
 
