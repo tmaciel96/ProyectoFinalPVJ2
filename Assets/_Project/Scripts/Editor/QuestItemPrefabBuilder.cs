@@ -190,7 +190,7 @@ public static class QuestItemPrefabBuilder
             size: new Vector2(0.06f, 0.16f), radius: 0.3f, gravity: -0.05f);
     }
 
-    private static Light AddLight(Transform parent, Color color, Vector3 localPos, float intensity, float range)
+    internal static Light AddLight(Transform parent, Color color, Vector3 localPos, float intensity, float range)
     {
         GameObject go = new GameObject("Glow_Light");
         go.transform.SetParent(parent, false);
@@ -204,7 +204,7 @@ public static class QuestItemPrefabBuilder
         return l;
     }
 
-    private static ParticleSystem CreateParticles(Transform parent, string name, Color color, Vector3 localPos,
+    internal static ParticleSystem CreateParticles(Transform parent, string name, Color color, Vector3 localPos,
         float rate, float lifetime, float speed, Vector2 size, float radius, float gravity)
     {
         GameObject go = new GameObject(name);
@@ -253,7 +253,7 @@ public static class QuestItemPrefabBuilder
     }
 
     /// <summary>Instancia el modelo, lo escala a "size" (lado mayor) y lo apoya centrado sobre el origen.</summary>
-    private static GameObject AddModel(GameObject src, Transform parent, float size, bool keepColliders = false)
+    internal static GameObject AddModel(GameObject src, Transform parent, float size, bool keepColliders = false)
     {
         GameObject m = (GameObject)PrefabUtility.InstantiatePrefab(src, parent);
         m.transform.localPosition = Vector3.zero;
@@ -269,7 +269,7 @@ public static class QuestItemPrefabBuilder
         return m;
     }
 
-    private static GameObject Save(GameObject root, string path)
+    internal static GameObject Save(GameObject root, string path)
     {
         GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, path, out bool ok);
         if (ok) Debug.Log($"[Sepulturero] Prefab creado: {path}");

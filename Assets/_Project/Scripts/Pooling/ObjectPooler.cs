@@ -94,6 +94,38 @@ public class ObjectPooler : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Como SpawnFromPool, pero nunca recicla un objeto que sigue activo (un enemigo vivo): toma uno
+    /// apagado y, si no queda ninguno, instancia otro del prefab y lo suma al pool. Si el pool no existe,
+    /// lo crea con ese prefab (M4-6, spawners).
+    /// </summary>
+    public GameObject SpawnInactive(string tag, GameObject prefab, Vector3 position, Quaternion rotation, int initialSize = 4)
+    {
+        if (string.IsNullOrEmpty(tag)) return null;
+        if (!HasPool(tag) && !RegisterPool(tag, prefab, Mathf.Max(1, initialSize))) return null;
+
+        Queue<GameObject> queue = poolDictionary[tag];
+        GameObject obj = null;
+        for (int i = 0; i < queue.Count; i++)
+        {
+            GameObject candidate = queue.Dequeue();
+            queue.Enqueue(candidate);
+            if (candidate != null && !candidate.activeSelf) { obj = candidate; break; }
+        }
+
+        if (obj == null)
+        {
+            if (prefab == null) return null;
+            obj = Instantiate(prefab, transform);
+            obj.SetActive(false);
+            queue.Enqueue(obj);
+        }
+
+        obj.transform.SetPositionAndRotation(position, rotation);
+        obj.SetActive(true);
+        return obj;
+    }
+
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)
     {
         if (poolDictionary == null || !poolDictionary.ContainsKey(tag))
