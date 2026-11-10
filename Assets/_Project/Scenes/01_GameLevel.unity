@@ -6764,17 +6764,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13779f51e59b7ed46aca96f07422b455, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CursedSpawner
+  triggerOnProximity: 1
   triggerRadius: 7
   enemiesToSpawn: 4
   spawnInterval: 0.5
   spawnPoints: []
+  spawnRadius: 2.5
+  enemyPrefabs: []
+  pickMode: 0
+  poolSize: 6
   enemyPoolTags:
-  - EnemyOrb_Fast
-  - EnemyOrb_Tank
-  - EnemyOrb_Shooter
+  - Enemy_Zombie
   fallbackEnemyPrefab: {fileID: 0}
   triggerVFX: {fileID: 0}
   triggerAudio: {fileID: 0}
+  onAreaCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &510218126
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7761,8 +7767,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 562953700}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 101.71, y: -4.71, z: 217.29}
+  m_LocalRotation: {x: 0.70710665, y: -0, z: -0, w: 0.70710695}
+  m_LocalPosition: {x: 106.46, y: 17.51752, z: 208.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8880,17 +8886,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13779f51e59b7ed46aca96f07422b455, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CursedSpawner
+  triggerOnProximity: 1
   triggerRadius: 2
   enemiesToSpawn: 1
   spawnInterval: 0.5
   spawnPoints: []
+  spawnRadius: 2.5
+  enemyPrefabs: []
+  pickMode: 0
+  poolSize: 6
   enemyPoolTags:
-  - EnemyOrb_Fast
-  - EnemyOrb_Tank
-  - EnemyOrb_Shooter
+  - Enemy_Skeleton
   fallbackEnemyPrefab: {fileID: 0}
   triggerVFX: {fileID: 0}
   triggerAudio: {fileID: 0}
+  onAreaCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &641824729
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12916,6 +12928,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97fd26b4da311034fa7ea49030e699df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RuneAltar
+  quest: 0
+  manualActivation: 0
   interactionDistance: 3
   isActivated: 0
   altarLight: {fileID: 872650864}
@@ -12924,6 +12938,9 @@ MonoBehaviour:
   activationAudio: {fileID: 0}
   runeRenderer: {fileID: 0}
   activatedMaterial: {fileID: 0}
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &873523466
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15130,17 +15147,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13779f51e59b7ed46aca96f07422b455, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CursedSpawner
+  triggerOnProximity: 1
   triggerRadius: 7
   enemiesToSpawn: 4
   spawnInterval: 0.5
   spawnPoints: []
+  spawnRadius: 2.5
+  enemyPrefabs: []
+  pickMode: 0
+  poolSize: 6
   enemyPoolTags:
-  - EnemyOrb_Fast
-  - EnemyOrb_Tank
-  - EnemyOrb_Shooter
+  - Enemy_Skeleton
+  - Enemy_Espectro
+  - Enemy_Zombie
   fallbackEnemyPrefab: {fileID: 0}
   triggerVFX: {fileID: 0}
   triggerAudio: {fileID: 0}
+  onAreaCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &988066954
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18443,8 +18468,45 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1890142941869445333, guid: c31b3715cdd5e7546ac3dec39981f6ba, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1220345009}
   m_SourcePrefab: {fileID: 100100000, guid: c31b3715cdd5e7546ac3dec39981f6ba, type: 3}
+--- !u!1 &1220345008 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1890142941869445333, guid: c31b3715cdd5e7546ac3dec39981f6ba, type: 3}
+  m_PrefabInstance: {fileID: 1220345007}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1220345009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220345008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &1226085448
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18691,21 +18753,18 @@ MonoBehaviour:
   - tag: EnemyBullet
     prefab: {fileID: 2177228482881763846, guid: a05d4ff141c69f94ca1d4d67e4c2f81f, type: 3}
     size: 20
-  - tag: EnemyOrb_Fast
-    prefab: {fileID: 4556096434922996975, guid: 4236963e6074bbf4fa84c840d14260ab, type: 3}
-    size: 10
-  - tag: EnemyOrb_Tank
-    prefab: {fileID: 4556096434922996975, guid: c8e2f273ab89ccf4fa6e44b54ab45a4b, type: 3}
-    size: 6
-  - tag: EnemyOrb_Shooter
-    prefab: {fileID: 4556096434922996975, guid: 390294b1c07941a42830a842411a5ea1, type: 3}
-    size: 8
   - tag: PickupHealth
     prefab: {fileID: 185101493067283198, guid: 69c754f3eef823a489f5a6bf7167e7e8, type: 3}
     size: 8
-  - tag: PickupTime
-    prefab: {fileID: 8060137026819741764, guid: 58dec9639f548c347b28d3e6dfcfee83, type: 3}
-    size: 8
+  - tag: Enemy_Skeleton
+    prefab: {fileID: 4556096434922996975, guid: bdde06302f3088d4695c8662e0b4a677, type: 3}
+    size: 10
+  - tag: Enemy_Zombie
+    prefab: {fileID: 4556096434922996975, guid: a296f939ea5683444994584232d18fbe, type: 3}
+    size: 10
+  - tag: Enemy_Espectro
+    prefab: {fileID: 8626348495034185691, guid: bf02eadeab839864997970694690f8f5, type: 3}
+    size: 10
 --- !u!4 &1232506629
 Transform:
   m_ObjectHideFlags: 0
@@ -18861,6 +18920,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97fd26b4da311034fa7ea49030e699df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RuneAltar
+  quest: 0
+  manualActivation: 0
   interactionDistance: 2
   isActivated: 0
   altarLight: {fileID: 1233764232}
@@ -18869,6 +18930,9 @@ MonoBehaviour:
   activationAudio: {fileID: 0}
   runeRenderer: {fileID: 0}
   activatedMaterial: {fileID: 0}
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1234131433
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19951,7 +20015,6 @@ GameObject:
   - component: {fileID: 1311445658}
   - component: {fileID: 1311445659}
   - component: {fileID: 1311445661}
-  - component: {fileID: 1311445660}
   m_Layer: 0
   m_Name: Point Light Enemy 2
   m_TagString: Untagged
@@ -20068,29 +20131,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!114 &1311445660
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1311445656}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13779f51e59b7ed46aca96f07422b455, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CursedSpawner
-  triggerRadius: 7
-  enemiesToSpawn: 3
-  spawnInterval: 0.5
-  spawnPoints: []
-  enemyPoolTags:
-  - EnemyOrb_Fast
-  - EnemyOrb_Tank
-  - EnemyOrb_Shooter
-  fallbackEnemyPrefab: {fileID: 0}
-  triggerVFX: {fileID: 0}
-  triggerAudio: {fileID: 0}
 --- !u!114 &1311445661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20103,17 +20143,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13779f51e59b7ed46aca96f07422b455, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CursedSpawner
+  triggerOnProximity: 1
   triggerRadius: 2
   enemiesToSpawn: 2
   spawnInterval: 0.5
   spawnPoints: []
+  spawnRadius: 2.5
+  enemyPrefabs: []
+  pickMode: 0
+  poolSize: 6
   enemyPoolTags:
-  - EnemyOrb_Fast
-  - EnemyOrb_Tank
-  - EnemyOrb_Shooter
+  - Enemy_Skeleton
+  - Enemy_Espectro
   fallbackEnemyPrefab: {fileID: 0}
   triggerVFX: {fileID: 0}
   triggerAudio: {fileID: 0}
+  onAreaCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1335931930
 GameObject:
   m_ObjectHideFlags: 0
@@ -23856,12 +23903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf706d5b9e39a344ab64326544d734ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  timeElapsed: 0
-  maxTime: 213
-  timerIsActive: 1
-  timerText: {fileID: 1098530346}
-  totalRunes: 3
-  runesActivated: 0
+  state: 1
   runesText: {fileID: 865132077}
   escapePortal: {fileID: 1698371879}
   healthSlider: {fileID: 529690414}
@@ -23872,8 +23914,11 @@ MonoBehaviour:
   damageVignette: {fileID: 1287277104}
   vignetteFadeSpeed: 3
   victoryPanel: {fileID: 979717664}
+  victoryText: {fileID: 0}
+  victoryMessage: "\xA1Las cinco runas brillan otra vez!\nLas almas del cementerio
+    descansan: termin\xF3 el turno del sepulturero."
+  timerText: {fileID: 1098530346}
   defeatPanel: {fileID: 547698890}
-  defeatReasonText: {fileID: 215321369}
 --- !u!4 &1667291772
 Transform:
   m_ObjectHideFlags: 0
@@ -23901,6 +23946,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd737f0f3a1adc4998adec95e843d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroDialogue
+  introData: {fileID: 0}
   dialogueLines:
   - speaker: "Esp\xEDritu Ancestral"
     message: "Despierta, Guardi\xE1n de la Calabaza... La maldici\xF3n de la noche
@@ -28611,6 +28657,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97fd26b4da311034fa7ea49030e699df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RuneAltar
+  quest: 0
+  manualActivation: 0
   interactionDistance: 3
   isActivated: 0
   altarLight: {fileID: 1993901199}
@@ -28619,6 +28667,9 @@ MonoBehaviour:
   activationAudio: {fileID: 0}
   runeRenderer: {fileID: 0}
   activatedMaterial: {fileID: 0}
+  onActivated:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2000860945
 GameObject:
   m_ObjectHideFlags: 0
