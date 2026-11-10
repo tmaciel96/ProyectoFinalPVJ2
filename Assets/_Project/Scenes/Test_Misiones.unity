@@ -19075,6 +19075,9 @@ MonoBehaviour:
   - tag: PickupHealth
     prefab: {fileID: 185101493067283198, guid: 69c754f3eef823a489f5a6bf7167e7e8, type: 3}
     size: 8
+  - tag: Enemy_Espectro
+    prefab: {fileID: 8626348495034185691, guid: bf02eadeab839864997970694690f8f5, type: 3}
+    size: 10
 --- !u!4 &1232506629
 Transform:
   m_ObjectHideFlags: 0
