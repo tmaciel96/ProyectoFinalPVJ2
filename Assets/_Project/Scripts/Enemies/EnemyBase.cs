@@ -134,6 +134,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
         if (!CompareTag("Enemy")) gameObject.tag = "Enemy";
 
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator != null && animator.runtimeAnimatorController == null) animator = null; // modelo sin animaciones (espectro)
         if (animator != null) animator.applyRootMotion = false;
 
         renderers = GetComponentsInChildren<Renderer>(true);
