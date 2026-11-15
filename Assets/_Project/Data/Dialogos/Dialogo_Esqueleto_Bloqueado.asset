@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Esqueleto_Bloqueado
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Guardi\u00E1n Esqueleto"
+  defaultSpeaker: "Zombi Sepulturero"
   lines:
-  - speaker: "Guardi\u00E1n Esqueleto"
+  - speaker: "Zombi Sepulturero"
     message: "\u00A1Hola, vecino! Primero dale una mano a la Bruja; despu\u00E9s charlamos, que yo no me voy a ning\u00FAn lado."

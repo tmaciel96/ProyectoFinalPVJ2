@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Gato_Entrega
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Gato Negro"
+  defaultSpeaker: "Espantap\u00E1jaros"
   lines:
-  - speaker: "Gato Negro"
+  - speaker: "Espantap\u00E1jaros"
     message: "Todas en su lugar. Las almas ya pueden recordar qui\u00E9nes fueron."
-  - speaker: "Gato Negro"
-    message: "Prrr... La quinta runa brilla. And\u00E1 al port\u00F3n, sepulturero: terminaste tu turno."
+  - speaker: "Espantap\u00E1jaros"
+    message: "Je, je... La quinta runa brilla. And\u00E1 al port\u00F3n, sepulturero: terminaste tu turno."

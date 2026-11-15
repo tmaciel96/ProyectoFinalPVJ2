@@ -26,7 +26,7 @@ public class IntroDialogue : MonoBehaviour
         new DialogueLine { speaker = "Sepulturero", message = "¿Eh? ¿Quién cerró el portón? ¡Y esta niebla que brilla...!" },
         new DialogueLine { speaker = "Espíritu del Portón", message = "Tranquilo, sepulturero. Esta noche de luna llena el cementerio se selló con una magia antigua." },
         new DialogueLine { speaker = "Espíritu del Portón", message = "Mirá el portón: tiene cinco runas apagadas. Cada una despierta cuando ayudás a un alma que no puede descansar." },
-        new DialogueLine { speaker = "Espíritu del Portón", message = "La Bruja, el Guardián Esqueleto, el Vampiro, el Niño Fantasma y el Gato Negro te esperan, cada uno en su sector." },
+        new DialogueLine { speaker = "Espíritu del Portón", message = "La Bruja, el Zombi Sepulturero, el Vampiro, el Niño Fantasma y el Espantapájaros te esperan, cada uno en su sector." },
         new DialogueLine { speaker = "Espíritu del Portón", message = "Con cada favor se enciende una runa y se abre la reja que lleva al sector siguiente. Con las cinco, el portón te deja salir." },
         new DialogueLine { speaker = "Sepulturero", message = "Bueno... un turno extra no mata a nadie. Bah, acá adentro, digamos." },
         new DialogueLine { speaker = "Espíritu del Portón", message = "Hablá con [E] o Espacio. Tu pala (clic izquierdo o J) y tus piedras (clic derecho o K) te van a cuidar de lo que ronda en la niebla. Suerte." }

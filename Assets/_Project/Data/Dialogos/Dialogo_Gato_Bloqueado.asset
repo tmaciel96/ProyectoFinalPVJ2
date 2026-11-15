@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Gato_Bloqueado
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Gato Negro"
+  defaultSpeaker: "Espantap\u00E1jaros"
   lines:
-  - speaker: "Gato Negro"
-    message: "Miau. (El gato te mira fijo y se da vuelta. Parece que todav\u00EDa no es tu momento.)"
+  - speaker: "Espantap\u00E1jaros"
+    message: "(El espantap\u00E1jaros no se mueve. Por un momento jurar\u00EDas que te sigui\u00F3 con la mirada... Parece que todav\u00EDa no es tu momento.)"

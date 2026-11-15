@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Gato_Recordatorio
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Gato Negro"
+  defaultSpeaker: "Espantap\u00E1jaros"
   lines:
-  - speaker: "Gato Negro"
-    message: "Todav\u00EDa faltan ofrendas. Busc\u00E1 bien entre las l\u00E1pidas, yo no me pienso mover."
+  - speaker: "Espantap\u00E1jaros"
+    message: "Todav\u00EDa faltan ofrendas. Busc\u00E1 bien entre las l\u00E1pidas, yo de este palo no me puedo mover."
