@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Gato_Pedido
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Gato Negro"
+  defaultSpeaker: "Espantap\u00E1jaros"
   lines:
-  - speaker: "Gato Negro"
-    message: "Miau... As\u00ED que llegaste hasta ac\u00E1. Yo cuido los recuerdos de este cementerio."
-  - speaker: "Gato Negro"
+  - speaker: "Espantap\u00E1jaros"
+    message: "Ah... As\u00ED que llegaste hasta ac\u00E1. Desde este palo veo todo el cementerio, y cuido sus recuerdos."
+  - speaker: "Espantap\u00E1jaros"
     message: "La niebla desparram\u00F3 las ofrendas entre las l\u00E1pidas: recuerdos perdidos de las almas que descansan ac\u00E1."
-  - speaker: "Gato Negro"
+  - speaker: "Espantap\u00E1jaros"
     message: "Juntalas y tra\u00E9melas. Cuando est\u00E9n todas, se enciende la \u00FAltima runa."

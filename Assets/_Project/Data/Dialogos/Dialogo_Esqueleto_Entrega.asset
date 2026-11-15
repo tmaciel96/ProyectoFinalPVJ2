@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f8916ddf634f63bb96191132da18ad, type: 3}
   m_Name: Dialogo_Esqueleto_Entrega
   m_EditorClassIdentifier: 
-  defaultSpeaker: "Guardi\u00E1n Esqueleto"
+  defaultSpeaker: "Zombi Sepulturero"
   lines:
-  - speaker: "Guardi\u00E1n Esqueleto"
+  - speaker: "Zombi Sepulturero"
     message: "\u00A1Ni un zombi a la vista! Ya era hora de un poco de paz en el barrio."

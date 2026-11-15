@@ -6,10 +6,10 @@ Los cinco sectores comparten el mismo terreno y cementerio de `01_GameLevel`; es
 | Sector | Misión | NPC | Componente de misión | Responsable |
 |---|---|---|---|---|
 | 1 | Ingredientes del caldero | Bruja | `QuestCollection` | |
-| 2 | Horda de zombis | Guardián Esqueleto | `AreaClearQuest` | |
+| 2 | Horda de zombis | Zombi Sepulturero | `AreaClearQuest` | |
 | 3 | Apagar las velas | Vampiro | `CandleQuest` | |
 | 4 | Espectros de las tumbas malditas | Niño Fantasma | `AreaClearQuest` | |
-| 5 | Ofrendas perdidas | Gato Negro | `QuestCollection` | |
+| 5 | Ofrendas perdidas | Espantapájaros | `QuestCollection` | |
 
 > Completá la columna **Responsable** y avisá en el grupo antes de empezar.
 
@@ -55,6 +55,13 @@ Todo lo de tu sector va debajo de un único objeto vacío en (0,0,0), con esta e
 - Usá los muros de `W A L L S` (duplicándolos) o cipreses/cercos con collider. Sin collider, el jugador pasa caminando.
 
 ### 3.2 NPC
+**Lo fácil: el prefab.** En `Assets/_Project/Prefabs/NPCs` hay un prefab por sector (`NPC_Bruja`, `NPC_ZombiSepulturero`, `NPC_Vampiro`, `NPC_NinoFantasma`, `NPC_Espantapajaros`). Arrastralo dentro de `P E O P L E` y listo: ya trae `NPCInteractable` con su misión, su nombre y sus 5 diálogos, el componente de misión, un collider, la animación de reposo y los indicadores "!" y "?" sobre la cabeza. Solo falta lo que depende de la escena:
+- `NPC_ZombiSepulturero` y `NPC_NinoFantasma` (`AreaClearQuest`): los spawners en `Activate On Quest Start`, `Area Center` y `Area Radius` (ver cada sector).
+- Opcional, en cualquiera: el `Progress Text` del HUD en el componente de misión.
+
+Los prefabs se regeneran con **Sepulturero › Crear prefabs de NPCs** (pisa los cambios hechos a mano en el prefab, salvo la posición de la pala, los ojos y la bruma del vampiro y los marcadores; los cambios de las instancias en la escena se conservan). Los nombres internos no cambiaron: el Zombi Sepulturero usa `Quest` = Esqueleto y `Dialogo_Esqueleto_*`, y el Espantapájaros usa `Quest` = GatoNegro y `Dialogo_Gato_*`.
+
+**A mano** (si querés otro modelo):
 1. Arrastrá el modelo dentro de `P E O P L E` (ver el modelo sugerido en cada sector).
 2. **En el mismo objeto del modelo** (no en la carpeta), *Add Component* → `NPCInteractable`:
    - `Quest`: la misión del sector.
@@ -75,7 +82,7 @@ Todo lo de tu sector va debajo de un único objeto vacío en (0,0,0), con esta e
 
 ### 3.3 Checkpoint
 1. Objeto vacío `Checkpoint_SN` a la **entrada** del sector, con un **Box Collider** que cubra el paso, y el componente `Checkpoint`.
-2. `Sector` = N − 1 (Bruja 0, Esqueleto 1, Vampiro 2, Niño 3, Gato 4).
+2. `Sector` = N − 1 (Bruja 0, Zombi Sepulturero 1, Vampiro 2, Niño 3, Espantapájaros 4).
 3. `Respawn Point`: un hijo vacío dentro del sector, mirando hacia adentro (la flecha azul es el frente). Vacío = usa el mismo objeto.
 4. Solo en el sector 1: tildar `Active On Start` y usar el `SpawnPoint` como `Respawn Point`.
 
@@ -145,7 +152,7 @@ Se regeneran con **Sepulturero › Crear prefabs de ítems de misión**.
 | `Item_Caldero` | Bruja | `QuestStateSwap`: pasa de vacío a lleno con burbujas al completar |
 | `Item_Vela_Altar` | Vampiro | `AltarCandle` |
 | `Item_Farol` | Vampiro | Modelo del farol (ya colgado del Player) |
-| `Item_Ofrenda_Gato` | Gato | `QuestItem` (Quest = GatoNegro) |
+| `Item_Ofrenda_Gato` | Espantapájaros | `QuestItem` (Quest = GatoNegro) |
 
 Los `QuestItem` se juntan caminando por encima, **solo con la misión En progreso**. Con `Hide Until Quest Starts` quedan ocultos hasta que el NPC da la misión.
 
@@ -155,7 +162,7 @@ Los `QuestItem` se juntan caminando por encima, **solo con la misión En progres
 
 ### Sector 1 — La Bruja
 - **Ambiente:** el claro de la bruja, el sector de entrada. Hongos, calabazas, escobas, un caldero burbujeante. Color: **verde**.
-- **NPC:** `Woman_Witch_Halloween` · `Quest` = Bruja · `Npc Name` = Bruja · diálogos `Dialogo_Bruja_*` · `QuestCollection` (Quest = Bruja, Item Label = Ingredientes).
+- **NPC:** prefab `NPC_Bruja` (o a mano: `Woman_Witch_Halloween` · `Quest` = Bruja · `Npc Name` = Bruja · diálogos `Dialogo_Bruja_*` · `QuestCollection` (Quest = Bruja, Item Label = Ingredientes)).
 - **Decoración sugerida** (`Poly Halloween/Prefabs/Halloween`): `Witch_Hat`, `Broom_Old`, `Book_Stand_Halloween`, `Mushroom_Magical_*`, `Pumpkin_Carved_Lit_*`, `Spiderweb_*`.
 - **Misión** (`M I S S I O N`):
   - `Item_Caldero` al lado de la bruja.
@@ -164,9 +171,9 @@ Los `QuestItem` se juntan caminando por encima, **solo con la misión En progres
 - **Enemigos:** pocos y fáciles, es el sector para aprender a pelear: 2 o 3 `Enemy_Zombie` sueltos o un spawner con `Trigger On Proximity`.
 - **Reja 1** → sector 2, con `Quest` = Bruja.
 
-### Sector 2 — El Guardián Esqueleto
+### Sector 2 — El Zombi Sepulturero
 - **Ambiente:** un cementerio **abierto**, sin mausoleo, con muchas tumbas en filas. Color: **blanco hueso / gris**.
-- **NPC:** un esqueleto de `ThirdParty/Skeleton` (sin script de enemigo) · `Quest` = Esqueleto · `Npc Name` = Guardián Esqueleto · diálogos `Dialogo_Esqueleto_*` · `AreaClearQuest` (Quest = Esqueleto, Enemy Label = Zombis).
+- **NPC:** prefab `NPC_ZombiSepulturero`: `Man_Killer_Halloween` con `Shovel_Gravedigger` clavada al lado (o a mano: `Quest` = Esqueleto · `Npc Name` = Zombi Sepulturero · diálogos `Dialogo_Esqueleto_*` · `AreaClearQuest` (Quest = Esqueleto, Enemy Label = Zombis)).
 - **Decoración sugerida:** `Gravestone_Old_*`, `Coffin_Old`, `Hole_Graveyard`, `Shovel_Gravedigger`, `Tree_Scary_Dead`, `Lantern_Street_Fixed_Halloween`.
 - **Misión:**
   - Un **área despejada** entre las tumbas donde aparece la horda.
@@ -178,7 +185,7 @@ Los `QuestItem` se juntan caminando por encima, **solo con la misión En progres
 
 ### Sector 3 — El Vampiro
 - **Ambiente:** el **mausoleo / capilla**, el único del mapa. Adentro, muchas velas encendidas; afuera, oscuridad. Color: **rojo oscuro / violeta**.
-- **NPC:** sin modelo propio todavía (M5-11); usar `Man_Killer_Halloween` como provisorio · `Quest` = Vampiro · `Npc Name` = Vampiro · diálogos `Dialogo_Vampiro_*` · `CandleQuest` (Quest = Vampiro).
+- **NPC:** prefab `NPC_Vampiro`: el zombi de traje de los enemigos (`Characters_Zombie_SuitMan_1`) con ojos rojos que brillan y bruma roja a los pies (o a mano: `Quest` = Vampiro · `Npc Name` = Vampiro · diálogos `Dialogo_Vampiro_*` · `CandleQuest` (Quest = Vampiro)).
 - **Decoración sugerida:** `Coffin_New`, `Book_Evil`, `Candle_Skull_Lit`, `Candle_Stick_*_Lit`, `Candle_Spine_Lit`, `Spiderweb_*`, `Gibbet`.
 - **Misión:**
   - **6 a 8 `Item_Vela_Altar`** dentro del mausoleo. Se apagan con **E**, solo con la misión En progreso.
@@ -189,8 +196,8 @@ Los `QuestItem` se juntan caminando por encima, **solo con la misión En progres
 
 ### Sector 4 — El Niño Fantasma
 - **Ambiente:** las **tumbas malditas**: lápidas rotas, niebla densa, árboles secos. Penumbra. Color: **celeste / azul frío**.
-- **NPC:** `Boy_Ghost_Halloween` · `Quest` = NinoFantasma · `Npc Name` = Niño Fantasma · diálogos `Dialogo_NinoFantasma_*` · `AreaClearQuest` (Quest = NinoFantasma, Enemy Label = Espectros).
-- **Decoración sugerida:** `Gravestone_Old_Classic_Broken`, `Gravestone_Old_Tower`, `Stump_Possesed`, `Tree_Scary_Dead`, `Scarecrow_*`, juguetes viejos o `Candy_*` cerca del niño.
+- **NPC:** prefab `NPC_NinoFantasma` (o a mano: `Boy_Ghost_Halloween` · `Quest` = NinoFantasma · `Npc Name` = Niño Fantasma · diálogos `Dialogo_NinoFantasma_*` · `AreaClearQuest` (Quest = NinoFantasma, Enemy Label = Espectros)).
+- **Decoración sugerida:** `Gravestone_Old_Classic_Broken`, `Gravestone_Old_Tower`, `Stump_Possesed`, `Tree_Scary_Dead`, juguetes viejos o `Candy_*` cerca del niño.
 - **Misión:**
   - Las tumbas malditas agrupadas en una zona, con algunas `Enemy_CursedTomb`.
   - `CursedSpawner` con `Enemy Prefabs` = `Enemy_Espectro`, `Trigger On Proximity` destildado, apagado en la escena y asignado en `Activate On Quest Start` de la `AreaClearQuest` (igual que el sector 2).
@@ -198,9 +205,9 @@ Los `QuestItem` se juntan caminando por encima, **solo con la misión En progres
 - **Enemigos:** el combate más difícil del juego: espectros (más rápidos, más daño, empujan) y tumbas que disparan.
 - **Reja 4** → sector 5, con `Quest` = NinoFantasma.
 
-### Sector 5 — El Gato Negro
+### Sector 5 — El Espantapájaros
 - **Ambiente:** el rincón más viejo del cementerio, junto al portón principal. Penumbra con ofrendas que brillan. Color: **violeta / dorado**.
-- **NPC:** sin modelo propio todavía (M5-11); usar una caja o cápsula negra como provisorio · `Quest` = GatoNegro · `Npc Name` = Gato Negro · diálogos `Dialogo_Gato_*` · `QuestCollection` (Quest = GatoNegro, Item Label = Ofrendas).
+- **NPC:** prefab `NPC_Espantapajaros`: `Scarecrow_A` (o a mano: `Quest` = GatoNegro · `Npc Name` = Espantapájaros · diálogos `Dialogo_Gato_*` · `QuestCollection` (Quest = GatoNegro, Item Label = Ofrendas)).
 - **Decoración sugerida:** `Lanterns_On_String_*`, `String_Of_Flags_*`, `Gravestone_Old_Cross`, `Candle_Finger_Holder_Lit`, `Pumpkin_Candy`.
 - **Misión:**
   - **5 `Item_Ofrenda_Gato`** escondidas entre las lápidas.

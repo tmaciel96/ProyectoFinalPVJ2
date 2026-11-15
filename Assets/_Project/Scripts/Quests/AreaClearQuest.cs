@@ -2,7 +2,7 @@
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // AreaClearQuest (M3-2, M3-6): misiones de "limpiar el área". Va en el mismo objeto que el
-// NPCInteractable del Guardián Esqueleto (zombis) o del Niño Fantasma (espectros) e implementa
+// NPCInteractable del Zombi Sepulturero (zombis) o del Niño Fantasma (espectros) e implementa
 // IQuestDelivery:
 //   - Al dar la misión activa los objetos de "Activar al empezar" (los CursedSpawner del sector, o un
 //     grupo de enemigos apagado) y reclama los QuestEnemy que haya dentro del área.
