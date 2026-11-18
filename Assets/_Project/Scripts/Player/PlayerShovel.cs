@@ -1,4 +1,4 @@
-﻿// =================================================================================================
+// =================================================================================================
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // M1-3 · Golpe con la pala: ataque frontal de corto alcance con cooldown.
@@ -34,7 +34,9 @@ public class PlayerShovel : MonoBehaviour
     [Header("Feedback (opcional)")]
     public AudioSource audioSource;
     public AudioClip swingClip;
+    [Tooltip("Demora del sonido de la pala en segundos" )] public float swingSoundDelay = 0.5f;
     public AudioClip hitClip;
+    [Range(0f, 1f)] public float soundVolume = 0.5f;
 
     public bool IsSwinging { get; private set; }
 
@@ -83,7 +85,7 @@ public class PlayerShovel : MonoBehaviour
     {
         IsSwinging = true;
         if (playerController != null) playerController.PlayAttackAnimation();
-        PlayClip(swingClip);
+        StartCoroutine(PlaySwingSound());
 
         if (hitDelay > 0f) yield return new WaitForSeconds(hitDelay);
 
@@ -91,6 +93,12 @@ public class PlayerShovel : MonoBehaviour
             ApplyHit();
 
         IsSwinging = false;
+    }
+
+    private IEnumerator PlaySwingSound()
+    {
+        if (swingSoundDelay > 0f) yield return new WaitForSeconds(swingSoundDelay);
+        if (playerHealth == null || !playerHealth.IsDead) PlayClip(swingClip);
     }
 
     private void ApplyHit()
@@ -132,7 +140,7 @@ public class PlayerShovel : MonoBehaviour
 
     private void PlayClip(AudioClip clip)
     {
-        if (audioSource != null && clip != null) audioSource.PlayOneShot(clip);
+        if (audioSource != null && clip != null) audioSource.PlayOneShot(clip, soundVolume);
     }
 
     void OnDrawGizmosSelected()

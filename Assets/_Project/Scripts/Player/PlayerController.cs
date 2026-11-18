@@ -1,4 +1,4 @@
-﻿// =================================================================================================
+// =================================================================================================
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 // Basado en el PlayerController del TP1 (The Pumpkin Ritual, Tamara Maciel).
 //
@@ -22,6 +22,21 @@ public class PlayerController : MonoBehaviour
     public float speed = 6f;
     public float gravity = -20f;
     private float verticalVelocity;
+    [Header("Pisadas" )] public AudioClip[] footstepClips;
+    [Range(0f, 1f)] public float footstepVolume = 0.5f;
+    public float footstepDistance = 1.8f;
+    private float distanceSinceFootstep;
+    private int lastFootstep = -1;
+    private AudioSource footstepSource;
+    [Header("Sonidos de interacción" )] public AudioClip pickupSoundClip;
+    public AudioClip dialogueOpenSoundClip;
+    [Range(0f, 1f)] public float interactionSoundVolume = 0.5f;
+
+    [Header("Sonidos de ataque" )]
+    public AudioClip attackSwingClip;
+    public AudioClip attackHitClip;
+    public AudioClip throwSoundClip;
+    [Range(0f, 1f)] public float attackVolume = 0.5f;
 
     [Header("Retroceso (golpe del espectro, M4-3)")]
     [Tooltip("Metros por segundo que pierde el empujón por segundo")]
@@ -97,6 +112,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        footstepSource = gameObject.AddComponent<AudioSource>();
+        footstepSource.playOnAwake = false;
         health = GetComponent<PlayerHealth>();
         if (cam == null) cam = Camera.main;
 
@@ -109,6 +126,12 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning("[PlayerController] Falta PlayerShovel en el Player: se agrega en runtime. Sumalo al prefab para ajustar daño y alcance.");
             gameObject.AddComponent<PlayerShovel>();
         }
+
+        PlayerShovel shovelAudio = GetComponent<PlayerShovel>();
+        if (shovelAudio.audioSource == null) shovelAudio.audioSource = footstepSource;
+        if (shovelAudio.swingClip == null) shovelAudio.swingClip = attackSwingClip;
+        if (shovelAudio.hitClip == null) shovelAudio.hitClip = attackHitClip;
+        shovelAudio.soundVolume = attackVolume;
 
         // Lo mismo con la interacción (M1-7)
         if (GetComponent<PlayerInteractor>() == null)
@@ -198,7 +221,20 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector3 finalMove = (moveDirection * speed) + new Vector3(0f, verticalVelocity, 0f) + knockbackVelocity;
+        Vector3 previousPosition = transform.position;
         controller.Move(finalMove * Time.deltaTime);
+        if (controller.isGrounded && moveDirection.sqrMagnitude > 0.01f)
+        {
+            Vector3 displacement = transform.position - previousPosition;
+            displacement.y = 0f;
+            distanceSinceFootstep += displacement.magnitude;
+            if (distanceSinceFootstep >= Mathf.Max(0.1f, footstepDistance))
+            {
+                distanceSinceFootstep = 0f;
+                PlayFootstep();
+            }
+        }
+        else distanceSinceFootstep = 0f;
         knockbackVelocity = Vector3.MoveTowards(knockbackVelocity, Vector3.zero, knockbackDecay * Time.deltaTime);
 
         currentMoveDirection = moveDirection;
@@ -209,6 +245,18 @@ public class PlayerController : MonoBehaviour
     /// Pasa la dirección de movimiento (mundo) al espacio local del personaje: así el Blend Tree 2D
     /// muestra correr de frente, de espaldas o de costado según hacia dónde mira.
     /// </summary>
+    public void PlayPickupSound() { if (footstepSource != null && pickupSoundClip != null) footstepSource.PlayOneShot(pickupSoundClip, interactionSoundVolume); }
+    public void PlayDialogueOpenSound() { if (footstepSource != null && dialogueOpenSoundClip != null) footstepSource.PlayOneShot(dialogueOpenSoundClip, interactionSoundVolume); }
+
+    private void PlayFootstep()
+    {
+        if (footstepClips == null || footstepClips.Length == 0) return;
+        int index = Random.Range(0, footstepClips.Length);
+        if (footstepClips.Length > 1 && index == lastFootstep) index = (index + 1) % footstepClips.Length;
+        lastFootstep = index;
+        if (footstepClips[index] != null) footstepSource.PlayOneShot(footstepClips[index], footstepVolume);
+    }
+
     private void UpdateMoveAnimation(Vector3 worldMoveDirection)
     {
         if (animator == null) return;
@@ -322,6 +370,7 @@ public class PlayerController : MonoBehaviour
             if (fromPointer) FaceAimForAction();
             else currentAimPoint3D = transform.position + transform.forward * 10f + Vector3.up * 1f;
             ThrowStone();
+            if (throwSoundClip != null) footstepSource.PlayOneShot(throwSoundClip, attackVolume);
         }
     }
 

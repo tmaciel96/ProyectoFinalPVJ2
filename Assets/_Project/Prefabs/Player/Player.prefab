@@ -79,6 +79,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5.5
   gravity: -20
+  footstepClips:
+  - {fileID: 8300000, guid: 9ea11a2d13d536e4e8441a0f5895995c, type: 3}
+  - {fileID: 8300000, guid: 203ac8b6f07070e4f93f1c1a6fff06c3, type: 3}
+  - {fileID: 8300000, guid: ac6649006dbee9e4685752e124111da7, type: 3}
+  - {fileID: 8300000, guid: f42914d98b070f741b2feee96a2988ee, type: 3}
+  - {fileID: 8300000, guid: feb62160ad1f8334ab037017b843d162, type: 3}
+  - {fileID: 8300000, guid: 001f691d110d55648871a03f446ffa08, type: 3}
+  - {fileID: 8300000, guid: 6478d7fb30f301b4fa8f74d5d1dad094, type: 3}
+  - {fileID: 8300000, guid: f1547ad8fbfa4f24d83e5a445aee860d, type: 3}
+  - {fileID: 8300000, guid: 47832b56ccba5bc408b1d5aac1871746, type: 3}
+  - {fileID: 8300000, guid: 3d132da7af60f1145a3deb6a8bc42a08, type: 3}
+  footstepVolume: 0.5
+  footstepDistance: 1.8
+  pickupSoundClip: {fileID: 8300000, guid: 000a27df01894159c14289cf44aec7cb, type: 3}
+  dialogueOpenSoundClip: {fileID: 8300000, guid: 45f2103178ffbf8173e848a57f449792, type: 3}
+  interactionSoundVolume: 0.5
+  attackSwingClip: {fileID: 8300000, guid: 0e9bca6dd55d7e541a865752da6415f5, type: 3}
+  attackHitClip: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}
+  throwSoundClip: {fileID: 8300000, guid: c266e86e5ec11e344bf66dede26cbc46, type: 3}
+  attackVolume: 0.5
   throwCooldown: 0.25
   throwPoint: {fileID: 8168126434635415019}
   stoneProjectilePrefab: {fileID: 6122983997982631527, guid: ea22b1a77ac34c84ea9d9e6b1428de84, type: 3}

@@ -51,6 +51,7 @@ public class StonePile : MonoBehaviour, IInteractable
         if (inv.Add(stonesGiven) <= 0) return;
 
         if (audioSource != null && pickupClip != null) audioSource.PlayOneShot(pickupClip);
+        else interactor.GetComponentInParent<PlayerController>()?.PlayPickupSound();
 
         if (refillTime > 0f)
         {

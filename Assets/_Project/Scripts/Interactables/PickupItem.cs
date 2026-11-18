@@ -1,4 +1,4 @@
-﻿// =================================================================================================
+// =================================================================================================
 // Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
 // Autora: Tamara Maciel
 // Correo: tmaciel96@gmail.com
@@ -176,6 +176,9 @@ public class PickupItem : MonoBehaviour
             hitObject.GetComponentInParent<PlayerController>() != null)
         {
             collected = true;
+            PlayerController collector = hitObject.GetComponentInParent<PlayerController>();
+            if (collector == null && playerTransform != null) collector = playerTransform.GetComponent<PlayerController>();
+            if (collector != null) collector.PlayPickupSound();
 
             if (type == PickupType.HealthPotion)
             {

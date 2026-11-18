@@ -121,6 +121,7 @@ public class QuestItem : MonoBehaviour
             Destroy(vfx, 3f);
         }
         if (collectClip != null) AudioSource.PlayClipAtPoint(collectClip, transform.position, collectVolume);
+        else if (player != null) player.GetComponent<PlayerController>()?.PlayPickupSound();
 
         QuestCollection.ReportCollected(this);
         onCollected?.Invoke();

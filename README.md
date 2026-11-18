@@ -73,3 +73,7 @@ Assets/
 ## Créditos
 
 Ver [CREDITS.md](CREDITS.md).
+
+## Contribuciones
+
+- Ariel Ledezma 

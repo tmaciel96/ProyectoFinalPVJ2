@@ -140,6 +140,7 @@ public class NPCInteractable : MonoBehaviour, IInteractable
             return;
         }
 
+        FindFirstObjectByType<PlayerController>()?.PlayDialogueOpenSound();
         talking = true;
         System.Action finished = () =>
         {
