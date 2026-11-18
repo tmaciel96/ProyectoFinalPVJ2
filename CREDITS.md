@@ -13,5 +13,10 @@ Este repositorio debe mantenerse **privado**: la licencia no permite redistribui
 
 ## Proyecto
 
-Juego desarrollado por el equipo de Programación 2 – UNICABA.
-_(Completar con los nombres de los integrantes.)_
+Juego desarrollado por el equipo de Programación 2 – UNICABA:
+
+- **Tamara Maciel**
+- **África Aular**
+- **Manfred Camacho**
+- **Ariel Ledezma**
+- **Matías Quiñones**
