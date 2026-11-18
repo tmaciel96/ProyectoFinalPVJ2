@@ -202,7 +202,7 @@ public class GameManager : MonoBehaviour
     {
         if (runesText != null)
         {
-            runesText.text = $"Runas: {QuestManager.CompletedCount} / {QuestManager.QuestCount}";
+            runesText.text = $"Runas: <color=#FFBC38>{QuestManager.CompletedCount} / {QuestManager.QuestCount}</color>";
         }
     }
 
