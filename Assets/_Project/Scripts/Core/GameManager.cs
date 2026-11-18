@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviour
 
         if (victoryPanel != null) victoryPanel.SetActive(false);
         if (defeatPanel != null) defeatPanel.SetActive(false);
-        if (interactionPrompt != null) interactionPrompt.gameObject.SetActive(false);
+        if (interactionPrompt != null) interactionPrompt.transform.parent.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
 
         // Auto-encontrar portal si no fue asignado en el Inspector
@@ -277,7 +277,7 @@ public class GameManager : MonoBehaviour
         if (interactionPrompt == null) return;
 
         bool show = state != GameState.Victoria && focused != null;
-        interactionPrompt.gameObject.SetActive(show);
+        interactionPrompt.transform.parent.gameObject.SetActive(show);
         if (show) interactionPrompt.text = $"Presiona [E] para {focused.InteractionPrompt}";
     }
 
@@ -298,6 +298,8 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        if (interactionPrompt != null) interactionPrompt.transform.parent.gameObject.SetActive(false);
 
         if (victoryPanel != null)
         {
