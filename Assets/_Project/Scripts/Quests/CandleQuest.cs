@@ -96,7 +96,7 @@ public class CandleQuest : MonoBehaviour, IQuestDelivery
         bool show = QuestManager.IsInProgress(quest);
         progressText.gameObject.SetActive(show);
         if (!show) return;
-        progressText.text = Remaining > 0 ? $"Velas encendidas: {Remaining}" : "Volvé con el Vampiro";
+        progressText.text = Remaining > 0 ? $"Velas: <color=#FFBC38>{Extinguished} / {Required}</color>" : "Volvé con el Vampiro";
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

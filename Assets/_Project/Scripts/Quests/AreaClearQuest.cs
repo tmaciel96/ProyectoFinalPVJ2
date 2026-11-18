@@ -163,7 +163,7 @@ public class AreaClearQuest : MonoBehaviour, IQuestDelivery
         if (!show) return;
         progressText.text = IsReadyToDeliver
             ? "Área limpia: volvé a hablar"
-            : RequiredKills > 0 ? $"{enemyLabel}: {Kills} / {RequiredKills}" : $"{enemyLabel} restantes: {owned.Count}";
+            : RequiredKills > 0 ? $"{enemyLabel}: <color=#FFBC38>{Kills} / {RequiredKills}</color>" : $"{enemyLabel} restantes: <color=#FFBC38>{owned.Count}</color>";
     }
 
     void OnDrawGizmosSelected()

@@ -116,7 +116,7 @@ public class QuestCollection : MonoBehaviour, IQuestDelivery
         if (progressText == null) return;
         bool show = QuestManager.IsInProgress(quest);
         progressText.gameObject.SetActive(show);
-        if (show) progressText.text = $"{itemLabel}: {Collected} / {Required}";
+        if (show) progressText.text = $"{itemLabel}: <color=#FFBC38>{Collected} / {Required}</color>";
     }
 
     // Con "Enter Play Mode" sin recargar dominio los estáticos sobreviven
