@@ -276,7 +276,7 @@ public class GameManager : MonoBehaviour
     {
         if (interactionPrompt == null) return;
 
-        bool show = focused != null;
+        bool show = state != GameState.Victoria && focused != null;
         interactionPrompt.gameObject.SetActive(show);
         if (show) interactionPrompt.text = $"Presiona [E] para {focused.InteractionPrompt}";
     }
@@ -301,6 +301,8 @@ public class GameManager : MonoBehaviour
 
         if (victoryPanel != null)
         {
+            foreach (Transform element in victoryPanel.transform.parent)
+                if (element.gameObject != victoryPanel) element.gameObject.SetActive(false);
             if (victoryText != null && !string.IsNullOrEmpty(victoryMessage)) victoryText.text = victoryMessage;
             victoryPanel.SetActive(true);
             victoryPanel.transform.SetAsLastSibling(); // Poner al frente de cualquier otra imagen
