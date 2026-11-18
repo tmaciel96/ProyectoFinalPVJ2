@@ -417,6 +417,68 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff2bd180282082c4593615223fab4686, type: 3}
+--- !u!1 &977508687
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 977508689}
+  - component: {fileID: 977508688}
+  m_Layer: 0
+  m_Name: AudioController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &977508688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977508687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235eb51e491e9304ea40622d545b76d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioController
+  menuSceneName: 00_MainMenu
+  menuMusic: {fileID: 8300000, guid: 297234eec599ac844b2dbeccd1e676ec, type: 3}
+  explorationMusic: {fileID: 8300000, guid: c34497c41ea077b4b8e6262497be82fc, type: 3}
+  victoryMusic: {fileID: 8300000, guid: 18eb9eaa7f84e7243838882424de1105, type: 3}
+  questMusic:
+  - quest: 0
+    clip: {fileID: 8300000, guid: 63bc0faa3ccffda419f746c5232cb51d, type: 3}
+  - quest: 1
+    clip: {fileID: 8300000, guid: a299f9d82a844a748a8886d46ae6fd66, type: 3}
+  - quest: 2
+    clip: {fileID: 8300000, guid: a59913d583f56ca4fa8922f12eb9d2b3, type: 3}
+  - quest: 3
+    clip: {fileID: 8300000, guid: 9b1538d410ccb564b935470640be604d, type: 3}
+  - quest: 4
+    clip: {fileID: 8300000, guid: 05e6b7aad86570c4e94250cee485fbbc, type: 3}
+  musicVolume: 0.6
+  sfxVolume: 1
+  crossfadeTime: 1.5
+--- !u!4 &977508689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977508687}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 16.4364, y: 0, z: 62.40054}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1623095429
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,3 +693,4 @@ SceneRoots:
   - {fileID: 1623095431}
   - {fileID: 2116143114}
   - {fileID: 282828761}
+  - {fileID: 977508689}
