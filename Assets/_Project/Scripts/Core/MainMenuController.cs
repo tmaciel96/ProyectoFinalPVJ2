@@ -21,6 +21,7 @@ public class MainMenuController : MonoBehaviour
     [Header("Paneles Opcionales")]
     public GameObject controlsPanel;
     public GameObject creditsPanel;
+    public GameObject mainMenuPanel;
 
     void Start()
     {
@@ -32,6 +33,7 @@ public class MainMenuController : MonoBehaviour
 
         if (controlsPanel != null) controlsPanel.SetActive(false);
         if (creditsPanel != null) creditsPanel.SetActive(false);
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
     }
 
     public void PlayGame()
@@ -42,6 +44,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenControls()
     {
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(true);
         if (creditsPanel != null) creditsPanel.SetActive(false);
     }
@@ -49,10 +52,12 @@ public class MainMenuController : MonoBehaviour
     public void CloseControls()
     {
         if (controlsPanel != null) controlsPanel.SetActive(false);
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
     }
 
     public void OpenCredits()
     {
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
         if (creditsPanel != null) creditsPanel.SetActive(true);
         if (controlsPanel != null) controlsPanel.SetActive(false);
     }
@@ -60,6 +65,7 @@ public class MainMenuController : MonoBehaviour
     public void CloseCredits()
     {
         if (creditsPanel != null) creditsPanel.SetActive(false);
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
     }
 
     public void QuitGame()
