@@ -243,8 +243,8 @@ public class GameManager : MonoBehaviour
     {
         if (ammoText == null) return;
 
-        string colorTag = current <= 0 ? "<color=red>" : "<color=white>";
-        ammoText.text = $"Piedras: {colorTag}{current}</color> / {max}";
+        string colorTag = current <= 0 ? "<color=#FF655C>" : "<color=#FFBC38>";
+        ammoText.text = $"Piedras: {colorTag}{current} / {max}</color>";
     }
 
     private void TriggerDamageVignette()

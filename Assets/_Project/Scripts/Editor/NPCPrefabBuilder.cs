@@ -39,8 +39,6 @@ public static class NPCPrefabBuilder
     private const string ZombieSuit = "Assets/ThirdParty/Zombies/Prefabs/(P) Characters_Zombie_SuitMan_1.prefab";
     private const string HumanIdleFbx = "Assets/ThirdParty/Blink/Art/Animations/Animations_Starter_Pack/Movement/Idle.fbx";
 
-    private static readonly Color MarkerAvailable = new Color(1f, 0.85f, 0.2f);
-    private static readonly Color MarkerReady = new Color(0.45f, 1f, 0.4f);
     private static readonly Color VampireRed = new Color(0.9f, 0.08f, 0.08f);
 
     /// <summary>Objetos agregados cuya posición hecha a mano en el prefab se respeta al regenerar.</summary>
@@ -134,8 +132,8 @@ public static class NPCPrefabBuilder
             npc.thanksDialogue = Dialog(dialogKey, "Gracias");
 
             float top = b.max.y + 0.45f;
-            npc.questAvailableMarker = CreateMarker(root.transform, "Marcador_Disponible", "!", MarkerAvailable, top);
-            npc.readyToDeliverMarker = CreateMarker(root.transform, "Marcador_Entrega", "?", MarkerReady, top);
+            npc.questAvailableMarker = CreateMarker(root.transform, "Marcador_Disponible", "!", top);
+            npc.readyToDeliverMarker = CreateMarker(root.transform, "Marcador_Entrega", "?", top);
             npc.readyToDeliverMarker.SetActive(false);
 
             addQuestComponent(root);
@@ -247,21 +245,15 @@ public static class NPCPrefabBuilder
 
     // ---------------------------------------------------------------- Indicadores "!" y "?"
 
-    private static GameObject CreateMarker(Transform parent, string name, string symbol, Color color, float height)
+    private static GameObject CreateMarker(Transform parent, string name, string symbol, float height)
     {
+        string prefabName = symbol == "!" ? "UI_MarcadorFavor" : "UI_MarcadorEntrega";
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/" + prefabName + ".prefab");
         GameObject go = new GameObject(name);
         go.transform.SetParent(parent, false);
         go.transform.localPosition = new Vector3(0f, height, 0f);
 
-        TextMeshPro tmp = go.AddComponent<TextMeshPro>();
-        tmp.text = symbol;
-        tmp.fontSize = 6f;
-        tmp.fontStyle = FontStyles.Bold;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.color = color;
-        tmp.outlineWidth = 0.2f;
-        tmp.outlineColor = new Color32(0, 0, 0, 255);
-        tmp.rectTransform.sizeDelta = new Vector2(1f, 1f);
+        PrefabUtility.InstantiatePrefab(prefab, go.transform);
 
         go.AddComponent<Billboard>();
         return go;
@@ -406,3 +398,4 @@ public static class NPCPrefabBuilder
         return b;
     }
 }
+
