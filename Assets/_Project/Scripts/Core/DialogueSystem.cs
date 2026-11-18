@@ -4,7 +4,7 @@
 // DialogueSystem (M2-2): muestra cualquier diálogo en el Panel_Dialogue con efecto máquina de escribir.
 //   DialogueSystem.Instance.Play(data, alTerminar);   // con un DialogueData
 //   DialogueSystem.Instance.Play(lineas, alTerminar); // con líneas sueltas
-// Avanza con Espacio, E o clic; Btn_Next avanza y Btn_Skip lo termina.
+// Continuar, Espacio, E o clic completan la escritura y después avanzan a la próxima línea.
 // Mientras está abierto, BlocksGameplay es true: el jugador no camina, no ataca y no interactúa.
 //
 // Si la escena no tiene un DialogueSystem, IntroDialogue lo agrega y le pasa las referencias del panel
@@ -25,7 +25,7 @@ public class DialogueSystem : MonoBehaviour
 
     /// <summary>Se abrió un diálogo.</summary>
     public static event Action OnDialogueStarted;
-    /// <summary>Se cerró un diálogo (terminado o salteado).</summary>
+    /// <summary>Se cerró un diálogo.</summary>
     public static event Action OnDialogueEnded;
 
     /// <summary>True mientras hay un diálogo abierto y en el frame en que se cerró.</summary>
@@ -37,7 +37,6 @@ public class DialogueSystem : MonoBehaviour
     public TextMeshProUGUI speakerText;
     public TextMeshProUGUI messageText;
     public Button nextButton;
-    public Button skipButton;
 
     [Header("Efecto de escritura")]
     public float typingSpeed = 0.025f;
@@ -53,7 +52,8 @@ public class DialogueSystem : MonoBehaviour
     private Coroutine typingRoutine;
     private int openedFrame = -1;
     private int closedFrame = -1;
-    private bool buttonsHooked;
+    private Button hookedButton;
+    private int lastAdvanceFrame = -1;
 
     void Awake()
     {
@@ -67,6 +67,7 @@ public class DialogueSystem : MonoBehaviour
 
     void OnDestroy()
     {
+        if (hookedButton != null) hookedButton.onClick.RemoveListener(Next);
         if (Instance == this) Instance = null;
     }
 
@@ -78,13 +79,12 @@ public class DialogueSystem : MonoBehaviour
 
     /// <summary>Para cuando el sistema se crea por código (IntroDialogue le pasa su panel).</summary>
     public void Configure(GameObject panel, TextMeshProUGUI speaker, TextMeshProUGUI message,
-                          Button next, Button skip, AudioSource beep, float speed)
+                          Button next, AudioSource beep, float speed)
     {
         dialoguePanel = panel;
         speakerText = speaker;
         messageText = message;
         nextButton = next;
-        skipButton = skip;
         voiceBeepAudio = beep;
         typingSpeed = speed;
         HookButtons();
@@ -92,10 +92,10 @@ public class DialogueSystem : MonoBehaviour
 
     private void HookButtons()
     {
-        if (buttonsHooked) return;
-        if (nextButton != null) nextButton.onClick.AddListener(Next);
-        if (skipButton != null) skipButton.onClick.AddListener(End);
-        buttonsHooked = nextButton != null || skipButton != null;
+        if (hookedButton == nextButton) return;
+        if (hookedButton != null) hookedButton.onClick.RemoveListener(Next);
+        hookedButton = nextButton;
+        if (hookedButton != null) hookedButton.onClick.AddListener(Next);
     }
 
     // ---------------------------------------------------------------- API pública
@@ -117,6 +117,7 @@ public class DialogueSystem : MonoBehaviour
         defaultSpeaker = fallbackSpeaker;
         onFinished = finished;
         index = 0;
+        lastAdvanceFrame = -1;
         IsOpen = true;
         openedFrame = Time.frameCount;
 
@@ -128,13 +129,14 @@ public class DialogueSystem : MonoBehaviour
     /// <summary>Completa la línea si se está escribiendo; si no, pasa a la siguiente.</summary>
     public void Next()
     {
-        if (!IsOpen) return;
+        if (!IsOpen || lastAdvanceFrame == Time.frameCount) return;
+        lastAdvanceFrame = Time.frameCount;
 
         if (isTyping)
         {
             if (typingRoutine != null) StopCoroutine(typingRoutine);
             isTyping = false;
-            if (messageText != null) messageText.text = lines[index].message;
+            if (messageText != null) messageText.maxVisibleCharacters = int.MaxValue;
             return;
         }
 
@@ -185,7 +187,7 @@ public class DialogueSystem : MonoBehaviour
         if (advance) Next();
     }
 
-    // El clic sobre Btn_Next o Btn_Skip ya lo manejan los botones; si no, contaría dos veces
+    // El clic sobre Continuar ya lo maneja el botón.
     private bool PointerOverButton()
     {
         var es = UnityEngine.EventSystems.EventSystem.current;
@@ -195,8 +197,11 @@ public class DialogueSystem : MonoBehaviour
     private void ShowLine()
     {
         DialogueLine line = lines[index];
+        string speaker = string.IsNullOrEmpty(line.speaker) ? defaultSpeaker : line.speaker;
         if (speakerText != null)
-            speakerText.text = string.IsNullOrEmpty(line.speaker) ? defaultSpeaker : line.speaker;
+            speakerText.text = speaker;
+        if (dialoguePanel != null && dialoguePanel.TryGetComponent<DialoguePortraitUI>(out var portrait))
+            portrait.ShowSpeaker(speaker);
 
         if (typingRoutine != null) StopCoroutine(typingRoutine);
         typingRoutine = StartCoroutine(TypeRoutine(line.message ?? string.Empty));
@@ -205,14 +210,20 @@ public class DialogueSystem : MonoBehaviour
     private IEnumerator TypeRoutine(string sentence)
     {
         isTyping = true;
-        if (messageText != null) messageText.text = string.Empty;
-
-        foreach (char letter in sentence)
+        if (messageText != null)
         {
-            if (messageText != null) messageText.text += letter;
+            messageText.text = sentence;
+            messageText.maxVisibleCharacters = 0;
+            messageText.ForceMeshUpdate();
+        }
+        int count = messageText != null ? messageText.textInfo.characterCount : sentence.Length;
+        for (int i = 0; i < count; i++)
+        {
+            if (messageText != null) messageText.maxVisibleCharacters = i + 1;
             if (voiceBeepAudio != null && !voiceBeepAudio.isPlaying) voiceBeepAudio.Play();
             yield return new WaitForSeconds(typingSpeed);
         }
+        if (messageText != null) messageText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
     }
 }

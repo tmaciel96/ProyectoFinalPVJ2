@@ -37,7 +37,6 @@ public class IntroDialogue : MonoBehaviour
     public TextMeshProUGUI speakerText;
     public TextMeshProUGUI messageText;
     public Button nextButton;
-    public Button skipButton;
 
     [Header("Efecto de Escritura")]
     public float typingSpeed = 0.025f;
@@ -48,7 +47,7 @@ public class IntroDialogue : MonoBehaviour
         if (DialogueSystem.Instance == null && FindFirstObjectByType<DialogueSystem>() == null)
         {
             DialogueSystem system = gameObject.AddComponent<DialogueSystem>();
-            system.Configure(dialoguePanel, speakerText, messageText, nextButton, skipButton, voiceBeepAudio, typingSpeed);
+            system.Configure(dialoguePanel, speakerText, messageText, nextButton, voiceBeepAudio, typingSpeed);
         }
     }
 
