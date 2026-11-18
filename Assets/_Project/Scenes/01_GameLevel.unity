@@ -10396,6 +10396,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1088370846}
     m_Modifications:
+    - target: {fileID: 477919339160489640, guid: 649ed21a8c58fc3439d1a872f7e27a6a, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4290964479
+      objectReference: {fileID: 0}
+    - target: {fileID: 477919339160489640, guid: 649ed21a8c58fc3439d1a872f7e27a6a, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 1984566612696364203, guid: 649ed21a8c58fc3439d1a872f7e27a6a, type: 3}
       propertyPath: m_Pivot.x
       value: 1
@@ -34258,6 +34266,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4746680968911661865, guid: 7bce32a975c58a346a112ae722ef136b, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4290964479
+      objectReference: {fileID: 0}
+    - target: {fileID: 4746680968911661865, guid: 7bce32a975c58a346a112ae722ef136b, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 5165161635268149953, guid: 7bce32a975c58a346a112ae722ef136b, type: 3}
       propertyPath: m_Name
       value: UI_ContadorRunas
@@ -49267,11 +49283,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1300527470886259717, guid: 7804d7a3291f64e4d937eb406eb392c1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -4.508
       objectReference: {fileID: 0}
     - target: {fileID: 1300527470886259717, guid: 7804d7a3291f64e4d937eb406eb392c1, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 32
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1300527470886259717, guid: 7804d7a3291f64e4d937eb406eb392c1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

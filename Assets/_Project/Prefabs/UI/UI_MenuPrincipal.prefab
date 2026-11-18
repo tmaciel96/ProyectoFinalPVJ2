@@ -137,7 +137,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 33c981a6db483d5478603b93a07d5834, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 97a0f0aaad0c22f4297044b1b9731123, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -400,7 +400,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5822848652439600826
 RectTransform:
   m_ObjectHideFlags: 0
@@ -555,25 +555,9 @@ PrefabInstance:
     m_TransformParent: {fileID: 2867929631210875729}
     m_Modifications:
     - target: {fileID: 4265142443003739990, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4265142443003739990, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 311606245039592205}
-    - target: {fileID: 4265142443003739990, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4265142443003739990, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: CloseCredits
-      objectReference: {fileID: 0}
-    - target: {fileID: 4265142443003739990, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: MainMenuController, Assembly-CSharp
-      objectReference: {fileID: 0}
     - target: {fileID: 4649066715576158135, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -657,10 +641,6 @@ PrefabInstance:
     - target: {fileID: 5743811574208056636, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
       propertyPath: m_Name
       value: UI_VentanaCreditos
-      objectReference: {fileID: 0}
-    - target: {fileID: 5743811574208056636, guid: 06a72add27cd3664cae25c9d27b4576e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
