@@ -167,7 +167,7 @@ public class DialogueSystem : MonoBehaviour
     void Update()
     {
         // La tecla que abrió el diálogo (por ejemplo la E sobre un NPC) no lo avanza en el mismo frame
-        if (!IsOpen || Time.frameCount == openedFrame) return;
+        if (GameOptionsMenu.BlocksInput || !IsOpen || Time.frameCount == openedFrame) return;
 
         // Interact (E, Espacio, A) o Attack (clic, J, X) del PlayerInputReader. Sin lector, el teclado directo.
         bool advance;

@@ -42,9 +42,9 @@ public class PlayerInputReader : MonoBehaviour
     /// <summary>Posición del puntero en pantalla; null si no hay mouse.</summary>
     public Vector2? PointerPosition => Mouse.current != null && point != null ? point.ReadValue<Vector2>() : (Vector2?)null;
 
-    public bool AttackPressed => attackFrame == Time.frameCount;
-    public bool ThrowPressed => throwFrame == Time.frameCount;
-    public bool InteractPressed => interactFrame == Time.frameCount;
+    public bool AttackPressed => !GameOptionsMenu.BlocksInput && attackFrame == Time.frameCount && !(AttackFromPointer && UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject());
+    public bool ThrowPressed => !GameOptionsMenu.BlocksInput && throwFrame == Time.frameCount && !(ThrowFromPointer && UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject());
+    public bool InteractPressed => !GameOptionsMenu.BlocksInput && interactFrame == Time.frameCount;
     public bool PausePressed => pauseFrame == Time.frameCount;
     /// <summary>El último golpe con la pala se hizo con el mouse.</summary>
     public bool AttackFromPointer { get; private set; }

@@ -1,4 +1,4 @@
-﻿// =================================================================================================
+// =================================================================================================
 // Proyecto: The Pumpkin Ritual - La Hora de las Brujas (TP Programación 2 - UNICABA)
 // Autora: Tamara Maciel
 // Correo: tmaciel96@gmail.com
@@ -26,6 +26,7 @@ public class MainMenuController : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1f;
+        if (GetComponent<GameOptionsMenu>() == null) gameObject.AddComponent<GameOptionsMenu>();
 
         // Asegurar que el cursor esté visible y desbloqueado en el menú
         Cursor.lockState = CursorLockMode.None;

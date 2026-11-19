@@ -1,4 +1,4 @@
-﻿// =================================================================================================
+// =================================================================================================
 // Proyecto: El Turno del Sepulturero (Proyecto Final PVJ2 - UNICABA)
 //
 // GameManager (M2-7): gestor principal del nivel (Singleton).
@@ -75,6 +75,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1f;
+        if (GetComponent<GameOptionsMenu>() == null) gameObject.AddComponent<GameOptionsMenu>();
 
         if (victoryPanel != null) victoryPanel.SetActive(false);
         if (defeatPanel != null) defeatPanel.SetActive(false);
